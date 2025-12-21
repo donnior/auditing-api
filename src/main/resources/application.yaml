@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: demo
+
+  datasource:
+    url: "jdbc:postgresql://127.0.0.1:5432/xcauditing"
+    username: "postgres"
+    password: ""
+
+  flyway:
+    enabled: true
+    table: xc_flyway_schema_history
+    locations: classpath:db/migration
+    clean-disabled: true
+    baseline-on-migrate: true
+
+  quartz:
+    job-store-type: jdbc
+    properties:
+      org.quartz.jobStore.driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+
+  jackson:
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
+    property-naming-strategy: SNAKE_CASE
+    time-zone: GMT+8
+    deserialization:
+      fail_on_unknown_properties: false
