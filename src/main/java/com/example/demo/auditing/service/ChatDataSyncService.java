@@ -1,7 +1,7 @@
 package com.example.demo.auditing.service;
 
-import com.example.demo.auditing.entity.WxCpChatMsg;
-import com.example.demo.auditing.entity.WxCpChatMsgRepository;
+import com.example.demo.auditing.entity.WxChatMessage;
+import com.example.demo.auditing.entity.WxChatMessageRepository;
 import com.example.demo.auditing.external.ChatDataApiClient;
 import com.example.demo.auditing.external.ChatDataResponse;
 
@@ -27,7 +27,7 @@ public class ChatDataSyncService {
     private ChatDataApiClient chatDataApiClient;
 
     @Autowired
-    private WxCpChatMsgRepository wxCpChatMsgRepository;
+    private WxChatMessageRepository wxCpChatMsgRepository;
 
     @Autowired
     @org.springframework.context.annotation.Lazy
@@ -88,7 +88,7 @@ public class ChatDataSyncService {
         try {
             // 1. Determine start time
             ZonedDateTime startTime;
-            WxCpChatMsg lastMsg = wxCpChatMsgRepository.findTopByOrderByMsgTimeDesc();
+            WxChatMessage lastMsg = wxCpChatMsgRepository.findTopByOrderByMsgTimeDesc();
             if (lastMsg != null && lastMsg.getMsgTime() != null) {
                 startTime = lastMsg.getMsgTime();
             } else {
@@ -119,7 +119,7 @@ public class ChatDataSyncService {
                     break;
                 }
 
-                List<WxCpChatMsg> entities = convertToEntities(items);
+                List<WxChatMessage> entities = convertToEntities(items);
                 // Use self to ensure @Transactional works
                 int saved = self.saveChatMessages(entities);
                 totalSynced += saved;
@@ -150,11 +150,11 @@ public class ChatDataSyncService {
     /**
      * 转换外部API数据为实体对象
      */
-    private List<WxCpChatMsg> convertToEntities(List<ChatDataResponse.ChatMessageItem> items) {
-        List<WxCpChatMsg> entities = new ArrayList<>();
+    private List<WxChatMessage> convertToEntities(List<ChatDataResponse.ChatMessageItem> items) {
+        List<WxChatMessage> entities = new ArrayList<>();
 
         for (ChatDataResponse.ChatMessageItem item : items) {
-            WxCpChatMsg entity = new WxCpChatMsg();
+            WxChatMessage entity = new WxChatMessage();
             entity.setMsgId(item.getMsgId());
             entity.setFromId(item.getFromId());
             entity.setFromName(item.getFromName());
@@ -177,10 +177,10 @@ public class ChatDataSyncService {
      * 批量保存聊天消息，忽略重复记录
      */
     @Transactional
-    public int saveChatMessages(List<WxCpChatMsg> chatMessages) {
+    public int saveChatMessages(List<WxChatMessage> chatMessages) {
         int savedCount = 0;
 
-        for (WxCpChatMsg message : chatMessages) {
+        for (WxChatMessage message : chatMessages) {
             try {
                 // 直接使用JPA save，如果存在则更新
                 wxCpChatMsgRepository.save(message);

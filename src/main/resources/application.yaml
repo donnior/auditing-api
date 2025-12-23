@@ -1,3 +1,7 @@
+server:
+    servlet:
+      context-path: /auditing-api
+
 spring:
   application:
     name: demo

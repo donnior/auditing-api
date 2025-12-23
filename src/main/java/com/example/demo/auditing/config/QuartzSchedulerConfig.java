@@ -37,28 +37,28 @@ public class QuartzSchedulerConfig {
                 .build();
     }
 
-    /**
-     * 聊天分析任务配置
-     */
-    @Bean
-    public JobDetail chatAnalysisJobDetail() {
-        return JobBuilder.newJob(ChatAnalysisJob.class)
-                .withIdentity("chatAnalysisJob", "analysisGroup")
-                .withDescription("Chat analysis job")
-                .storeDurably()
-                .build();
-    }
+    // /**
+    //  * 聊天分析任务配置
+    //  */
+    // @Bean
+    // public JobDetail chatAnalysisJobDetail() {
+    //     return JobBuilder.newJob(ChatAnalysisJob.class)
+    //             .withIdentity("chatAnalysisJob", "analysisGroup")
+    //             .withDescription("Chat analysis job")
+    //             .storeDurably()
+    //             .build();
+    // }
 
-    /**
-     * 聊天分析任务触发器 - 每天凌晨2点执行
-     */
-    @Bean
-    public Trigger chatAnalysisJobTrigger() {
-        return TriggerBuilder.newTrigger()
-                .forJob(chatAnalysisJobDetail())
-                .withIdentity("chatAnalysisTrigger", "analysisGroup")
-                .withDescription("Trigger for chat analysis job")
-                .withSchedule(CronScheduleBuilder.cronSchedule("0 0 2 * * ?")) // 每天凌晨2点执行
-                .build();
-    }
+    // /**
+    //  * 聊天分析任务触发器 - 每天凌晨2点执行
+    //  */
+    // @Bean
+    // public Trigger chatAnalysisJobTrigger() {
+    //     return TriggerBuilder.newTrigger()
+    //             .forJob(chatAnalysisJobDetail())
+    //             .withIdentity("chatAnalysisTrigger", "analysisGroup")
+    //             .withDescription("Trigger for chat analysis job")
+    //             .withSchedule(CronScheduleBuilder.cronSchedule("0 0 2 * * ?")) // 每天凌晨2点执行
+    //             .build();
+    // }
 }

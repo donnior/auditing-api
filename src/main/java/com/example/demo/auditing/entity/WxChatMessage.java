@@ -15,7 +15,7 @@ import java.time.ZonedDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class WxCpChatMsg {
+public class WxChatMessage {
 
     @Id
     @Column(name = "msg_id")
