@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -98,7 +99,8 @@ public class ChatDataSyncService {
 
             ZonedDateTime endTime = ZonedDateTime.now();
 
-            logger.info("Syncing chat data from {} to {}", startTime, endTime);
+            logger.info("Syncing chat data from {} to {}",
+                startTime.withZoneSameInstant(ZoneId.systemDefault()), endTime.withZoneSameInstant(ZoneId.systemDefault()));
 
             int page = 1;
             int limit = 100;

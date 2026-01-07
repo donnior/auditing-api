@@ -5,11 +5,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Entity;
 import lombok.Data;
+import lombok.ToString;
+
 import com.github.f4b6a3.ulid.UlidCreator;
 
 @Data
 @Entity
 @Table(name = "xca_evaluation_detail")
+@ToString
 public class EvaluationDetail {
 
     @Id

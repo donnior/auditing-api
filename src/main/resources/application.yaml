@@ -29,3 +29,13 @@ spring:
     time-zone: GMT+8
     deserialization:
       fail_on_unknown_properties: false
+
+logging:
+  pattern:
+    console: "%clr(%d{MM-dd HH:mm:ss}){yellow} %clr(%-5level) [%thread] %clr(%logger{36}){blue} - %msg%n"
+
+llm:
+  provider:
+    coze:
+      app-id: 1185261263158
+      apikey: sat_lHVT8MBuo0hC71uO5r6BtuW8zbJES1gmWUprWX4Lfq4Qli6fEpThfmrHSAOWXSWT

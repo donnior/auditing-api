@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -47,9 +48,14 @@ public class ChatDataApiClient {
 
         logger.info("Fetching chat data page {}...", finalPage);
 
+        // 转换到中国时区后再格式化，确保时间一致性
+        ZoneId chinaZone = ZoneId.of("Asia/Shanghai");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String startStr = startTime.format(formatter);
-        String endStr = endTime.format(formatter);
+        String startStr = startTime.withZoneSameInstant(chinaZone).format(formatter);
+        String endStr = endTime.withZoneSameInstant(chinaZone).format(formatter);
+
+        System.out.println("startStr: " + startStr);
+        System.out.println("endStr: " + endStr);
 
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("startDate", startStr);

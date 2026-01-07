@@ -47,6 +47,7 @@ public interface WxChatMessageRepository extends JpaRepository<WxChatMessage, St
                                                          @Param("startTime") ZonedDateTime startTime,
                                                          @Param("endTime") ZonedDateTime endTime);
 
+
     /**
      * 查询所有参与聊天的员工ID
      */
@@ -62,5 +63,14 @@ public interface WxChatMessageRepository extends JpaRepository<WxChatMessage, St
     @Query("SELECT MAX(m.dataSeq) FROM WxChatMessage m")
     Long findMaxDataSeq();
 
+    /**
+     * 查询员工与指定客户之间最早的一条聊天记录
+     */
+    @Query("SELECT m FROM WxChatMessage m " +
+           "WHERE ((m.fromId = :employeeId AND m.acceptId = :customerId) " +
+           "OR (m.fromId = :customerId AND m.acceptId = :employeeId)) " +
+           "ORDER BY m.msgTime ASC LIMIT 1")
+    WxChatMessage findFirstChatBetweenEmployeeAndCustomer(@Param("employeeId") String employeeId,
+                                                          @Param("customerId") String customerId);
 
 }
