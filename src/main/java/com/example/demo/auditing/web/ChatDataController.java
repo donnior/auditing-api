@@ -1,7 +1,7 @@
 package com.example.demo.auditing.web;
 
 import com.example.demo.auditing.service.ChatDataSyncService;
-import com.example.demo.auditing.service.ChatAnalysisService;
+import com.example.demo.auditing.service.WeeklyChatAnalysisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +21,7 @@ public class ChatDataController {
     private ChatDataSyncService chatDataSyncService;
 
     @Autowired
-    private ChatAnalysisService chatAnalysisService;
+    private WeeklyChatAnalysisService weeklyChatAnalysisService;
 
     /**
      * 手动触发聊天数据同步

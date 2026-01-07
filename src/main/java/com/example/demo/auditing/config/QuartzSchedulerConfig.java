@@ -1,7 +1,6 @@
 package com.example.demo.auditing.config;
 
 import com.example.demo.auditing.job.ChatDataSyncJob;
-import com.example.demo.auditing.job.ChatAnalysisJob;
 import org.quartz.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

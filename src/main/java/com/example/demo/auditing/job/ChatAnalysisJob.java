@@ -1,6 +1,6 @@
 package com.example.demo.auditing.job;
 
-import com.example.demo.auditing.service.ChatAnalysisService;
+import com.example.demo.auditing.service.WeeklyChatAnalysisService;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -20,7 +20,7 @@ public class ChatAnalysisJob implements Job {
     private static final Logger logger = LoggerFactory.getLogger(ChatAnalysisJob.class);
 
     @Autowired
-    private ChatAnalysisService chatAnalysisService;
+    private WeeklyChatAnalysisService weeklyChatAnalysisService;
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {

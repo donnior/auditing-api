@@ -1,7 +1,7 @@
 package com.example.demo.auditing.web;
 
-import com.example.demo.auditing.service.ChatAnalysisService;
-import com.example.demo.auditing.service.ChatDailyAnalysisService;
+import com.example.demo.auditing.service.WeeklyChatAnalysisService;
+import com.example.demo.auditing.service.DailyChatAnalysisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,22 +13,22 @@ import org.springframework.web.bind.annotation.*;
 public class ReportJobTestController {
 
     @Autowired
-    private ChatAnalysisService chatAnalysisService;
+    private WeeklyChatAnalysisService weeklyChatAnalysisService;
 
     @Autowired
-    private ChatDailyAnalysisService chatDailyAnalysisService;
+    private DailyChatAnalysisService dailyChatAnalysisService;
 
     /**
      * 员工列表（默认按id倒序）
      */
     @GetMapping("")
     public void testReportJob() {
-        chatAnalysisService.runWeeklyAnalysis();
+        weeklyChatAnalysisService.runWeeklyAnalysis();
     }
 
     @GetMapping("/daily")
     public void testDailyReportJob() {
-        chatDailyAnalysisService.runAnalysis();
+        dailyChatAnalysisService.runAnalysis();
     }
 
 }

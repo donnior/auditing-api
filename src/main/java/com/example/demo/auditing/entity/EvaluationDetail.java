@@ -7,6 +7,8 @@ import jakarta.persistence.Entity;
 import lombok.Data;
 import lombok.ToString;
 
+import java.time.ZonedDateTime;
+
 import com.github.f4b6a3.ulid.UlidCreator;
 
 @Data
@@ -75,5 +77,11 @@ public class EvaluationDetail {
 
     @Column(name = "has_risk_word_trigger")
     private int hasRiskWordTrigger;   //是否有触发风险词
+
+    @Column(name = "chat_start_time")
+    private ZonedDateTime chatStartTime;   //聊天开始时间
+
+    @Column(name = "chat_end_time")
+    private ZonedDateTime chatEndTime;   //聊天结束时间
 
 }

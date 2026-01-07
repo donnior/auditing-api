@@ -26,7 +26,10 @@ public class WeeklyReportSummaryController {
      */
     @GetMapping("")
     public Page<WeeklyReportSummary> listWeeklyReportSummaries(XCPageRequest pageRequest) {
-        var req = pageRequest.toPageRequest().withSort(Sort.by("id").descending());
+        var req = pageRequest.toPageRequest().withSort(
+            Sort.by("evalPeriod").descending()
+            .and(Sort.by("evalType"))
+            .and(Sort.by("employeeId")));
         return weeklyReportSummaryRepository.findAll(req);
     }
 

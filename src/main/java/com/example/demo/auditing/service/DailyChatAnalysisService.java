@@ -21,9 +21,9 @@ import com.example.demo.auditing.entity.WxChatMessageRepository;
  * 聊天分析服务
  */
 @Service
-public class ChatDailyAnalysisService {
+public class DailyChatAnalysisService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ChatAnalysisService.class);
+    private static final Logger logger = LoggerFactory.getLogger(WeeklyChatAnalysisService.class);
 
     private static final ExecutorService executorService = Executors.newFixedThreadPool(8);
 
@@ -94,6 +94,8 @@ public class ChatDailyAnalysisService {
             evaluationDetail.setEvalTime(ZonedDateTime.now().toString());
             evaluationDetail.setEvalPeriod(reportName);
             evaluationDetail.setEvalType(reportType);
+            evaluationDetail.setChatStartTime(fromTime);
+            evaluationDetail.setChatEndTime(toTime);
             evaluationDetailRepository.save(evaluationDetail);
         }
     }
