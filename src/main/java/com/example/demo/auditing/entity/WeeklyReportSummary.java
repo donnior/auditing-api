@@ -27,8 +27,8 @@ public class WeeklyReportSummary {
     @Column(name = "employee_qw_id")
     private String employeeQwId;
 
-    @Column(name = "eval_time")
-    private String evalTime;
+    @Column(name = "eval_period")
+    private String evalPeriod;
 
     @Column(name = "eval_type")
     private String evalType;

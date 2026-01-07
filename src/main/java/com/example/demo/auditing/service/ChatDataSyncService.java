@@ -94,7 +94,7 @@ public class ChatDataSyncService {
                 startTime = lastMsg.getMsgTime();
             } else {
                 // Default to 7 days ago if no data
-                startTime = ZonedDateTime.now().minusDays(7);
+                startTime = ZonedDateTime.now().minusDays(10);
             }
 
             ZonedDateTime endTime = ZonedDateTime.now();

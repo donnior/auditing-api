@@ -72,7 +72,6 @@ public class ChatAnalysisService {
             var reportType = getReportTypeForCustomer(employee, customer, targetSunday);
             if (typedReportAnalyser.getReportTypes().contains(reportType)) {
                 executorService.submit(() -> runCustomerAnalysisWithType(employee, customer, fromTime, toTime, reportType, reportName));
-                // runCustomerAnalysisWithType(employee, customer, fromTime, toTime, reportType, reportName);
             }
         }
     }
@@ -144,7 +143,8 @@ public class ChatAnalysisService {
             evaluationDetail.setEmployeeQwId(employee.getQwId());
             evaluationDetail.setCustomerId(customer);
             evaluationDetail.setCustomerName(customer);
-            evaluationDetail.setEvalTime(reportName);
+            evaluationDetail.setEvalTime(ZonedDateTime.now().toString());
+            evaluationDetail.setEvalPeriod(reportName);
             evaluationDetail.setEvalType(reportType);
             System.out.println("evaluationDetail: " + evaluationDetail);
             evaluationDetailRepository.save(evaluationDetail);

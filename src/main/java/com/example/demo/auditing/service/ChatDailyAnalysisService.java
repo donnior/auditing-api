@@ -55,8 +55,15 @@ public class ChatDailyAnalysisService {
         }
     }
 
+    private String getReportName(ZonedDateTime firstChatTime) {
+        String reportName = firstChatTime.with(DayOfWeek.SUNDAY).toLocalDate().toString();
+        if (firstChatTime.getDayOfWeek().getValue() > DayOfWeek.THURSDAY.getValue()) {
+            reportName = firstChatTime.with(DayOfWeek.SUNDAY).plusWeeks(1).toLocalDate().toString();
+        }
+        return reportName;
+    }
+
     private void runWeeklyAnalysisForEmployee(Employee employee, ZonedDateTime time) {
-        var reportName = time.toLocalDate().toString();
 
         var toTime = time;
         var fromTime = toTime.minusHours(72);
@@ -68,6 +75,8 @@ public class ChatDailyAnalysisService {
             WxChatMessage firstChat = wxChatMessageRepository.findFirstChatBetweenEmployeeAndCustomer(employee.getQwId(), customer);
             var firstChatTime = firstChat.getMsgTime();
             var rangeEnd = toTime.minusHours(48);
+            String reportName = getReportName(firstChatTime);
+
             if(firstChatTime.isAfter(fromTime) && firstChatTime.isBefore(rangeEnd)) {
                 executorService.submit(() -> runCustomerAnalysisWithType(employee, customer, fromTime, firstChatTime.plusHours(48), TypedReportAnalyser.ReportTypeForWithin48Hours, reportName));
             }
@@ -82,7 +91,8 @@ public class ChatDailyAnalysisService {
             evaluationDetail.setEmployeeQwId(employee.getQwId());
             evaluationDetail.setCustomerId(customer);
             evaluationDetail.setCustomerName(customer);
-            evaluationDetail.setEvalTime(reportName);
+            evaluationDetail.setEvalTime(ZonedDateTime.now().toString());
+            evaluationDetail.setEvalPeriod(reportName);
             evaluationDetail.setEvalType(reportType);
             evaluationDetailRepository.save(evaluationDetail);
         }

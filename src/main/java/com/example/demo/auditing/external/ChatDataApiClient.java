@@ -23,8 +23,9 @@ public class ChatDataApiClient {
 
     private final WebClient webClient;
 
-    // Hardcoded for now as per plan/doc, ideally should be in properties
-    private static final String API_URL = "https://www.cdxwsuger.cn/prod-api/api/wx/getMsgList";
+    private static final String API_DATA_URL = "https://www.cdxwsuger.cn/prod-api/api/wx/getMsgList";
+    private static final String API_USER_URL = "https://www.cdxwsuger.cn/prod-api/api/wx/getCardUserList";
+
     private static final String API_TOKEN = "VoyT09nB2fSlDGbF+NWzPxekKY1ZI/jqDKECSiTK6GoeoyLCARG9SaglnEvSG/WQ";
 
     public ChatDataApiClient() {
@@ -64,7 +65,7 @@ public class ChatDataApiClient {
         requestBody.put("limit", finalLimit);
 
         return webClient.post()
-                .uri(API_URL)
+                .uri(API_DATA_URL)
                 .header("X-Token", API_TOKEN)
                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                 .bodyValue(requestBody)
@@ -80,6 +81,37 @@ public class ChatDataApiClient {
                 })
                 .doOnError(error -> {
                     logger.error("Failed to fetch chat data from external API: {}", error.getMessage());
+                });
+    }
+
+
+    public Mono<ChatUserResponse> fetchChatUser(Integer page, Integer limit) {
+        final int finalPage = (page == null || page < 1) ? 1 : page;
+        final int finalLimit = (limit == null) ? 100 : limit;
+
+        logger.info("Fetching chat user page {}...", finalPage);
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("page", finalPage);
+        requestBody.put("limit", finalLimit);
+
+        return webClient.post()
+                .uri(API_USER_URL)
+                .header("X-Token", API_TOKEN)
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(ChatUserResponse.class)
+                .doOnSuccess(response -> {
+                    if (response != null && response.getCode() == 200 && response.getData() != null) {
+                        logger.info("Successfully fetched page {} of chat users. Total: {}",
+                                finalPage, response.getData().getTotal());
+                    } else {
+                        logger.warn("Fetched chat user but response indicates failure or empty: {}", response);
+                    }
+                })
+                .doOnError(error -> {
+                    logger.error("Failed to fetch chat user from external API: {}", error.getMessage());
                 });
     }
 }

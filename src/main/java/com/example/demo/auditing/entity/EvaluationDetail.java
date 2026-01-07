@@ -34,6 +34,9 @@ public class EvaluationDetail {
     @Column(name = "eval_time")
     private String evalTime;   //评估时间
 
+    @Column(name = "eval_period")
+    private String evalPeriod; // 评估周期
+
     @Column(name = "eval_type")
     private String evalType;   //评估类型
 
