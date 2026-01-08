@@ -1,6 +1,7 @@
 package com.example.demo.auditing.service;
 
 import java.time.DayOfWeek;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.time.ZonedDateTime;
@@ -78,7 +79,15 @@ public class DailyChatAnalysisService {
             String reportName = getReportName(firstChatTime);
 
             if(firstChatTime.isAfter(fromTime) && firstChatTime.isBefore(rangeEnd)) {
-                executorService.submit(() -> runCustomerAnalysisWithType(employee, customer, fromTime, firstChatTime.plusHours(48), TypedReportAnalyser.ReportTypeForWithin48Hours, reportName));
+                CompletableFuture.runAsync(
+                    () -> runCustomerAnalysisWithType(employee, customer, fromTime, firstChatTime.plusHours(48), TypedReportAnalyser.ReportTypeForWithin48Hours,reportName),
+                    executorService
+                ).exceptionally(ex -> {
+                            logger.error("Error running customer analysis for employee {} and customer {}", employee.getQwId(), customer, ex);
+                            return null;
+                });
+
+                // executorService.execute(() -> runCustomerAnalysisWithType(employee, customer, fromTime, firstChatTime.plusHours(48), TypedReportAnalyser.ReportTypeForWithin48Hours, reportName));
             }
         }
     }

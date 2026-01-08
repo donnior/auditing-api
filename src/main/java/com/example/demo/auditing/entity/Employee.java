@@ -13,6 +13,9 @@ import lombok.Data;
 @Data
 public class Employee {
 
+    public static final Integer STATUS_ACTIVE = 1;
+    public static final Integer STATUS_INACTIVE = 0;
+
     @Id
     @Column(name = "id")
     private String id = UlidCreator.getUlid().toLowerCase();

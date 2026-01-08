@@ -1,14 +1,13 @@
 package com.example.demo.auditing.web;
 
-import com.example.demo.auditing.entity.Employee;
-import com.example.demo.auditing.entity.EmployeeRepository;
 import com.example.demo.auditing.entity.WeeklyReportSummary;
 import com.example.demo.auditing.entity.WeeklyReportSummaryRepository;
+import com.example.demo.auditing.entity.WeeklyReportSummarySpec;
 import com.example.demo.common.XCPageRequest;
-import com.github.f4b6a3.ulid.UlidCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -22,15 +21,27 @@ public class WeeklyReportSummaryController {
     private WeeklyReportSummaryRepository weeklyReportSummaryRepository;
 
     /**
-     * 员工列表（默认按id倒序）
+     * 周报汇总列表（支持过滤和排序）
+     *
+     * @param pageRequest 分页参数
+     * @param queryParams 查询参数（employeeId, evalPeriod, evalType）
+     * @return 分页结果
      */
     @GetMapping("")
-    public Page<WeeklyReportSummary> listWeeklyReportSummaries(XCPageRequest pageRequest) {
+    public Page<WeeklyReportSummary> listWeeklyReportSummaries(
+            XCPageRequest pageRequest,
+            WeeklyReportSummaryQueryParams queryParams) {
+
+        // 构建动态查询条件
+        Specification<WeeklyReportSummary> spec = WeeklyReportSummarySpec.byQueryParams(queryParams);
+
+        // 默认排序：评估周期降序、评估类型、员工ID
         var req = pageRequest.toPageRequest().withSort(
             Sort.by("evalPeriod").descending()
             .and(Sort.by("evalType"))
             .and(Sort.by("employeeId")));
-        return weeklyReportSummaryRepository.findAll(req);
+
+        return weeklyReportSummaryRepository.findAll(spec, req);
     }
 
     @GetMapping("/{id}")

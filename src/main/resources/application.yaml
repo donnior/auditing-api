@@ -11,6 +11,11 @@ spring:
     username: "postgres"
     password: ""
 
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+
   flyway:
     enabled: true
     table: xc_flyway_schema_history
