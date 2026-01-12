@@ -1,11 +1,11 @@
-package com.example.demo.auditing.service;
+package com.xingcanai.csqe.auditing.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.example.demo.auditing.entity.EvaluationDetail;
+import com.xingcanai.csqe.auditing.entity.EvaluationDetail;
 
 class SimpleResponseEvaluationParserTest {
 
