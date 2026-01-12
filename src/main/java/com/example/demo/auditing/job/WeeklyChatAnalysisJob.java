@@ -9,15 +9,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.ZonedDateTime;
-
 /**
  * 聊天分析定时任务
  */
 @Component
-public class ChatAnalysisJob implements Job {
+public class WeeklyChatAnalysisJob implements Job {
 
-    private static final Logger logger = LoggerFactory.getLogger(ChatAnalysisJob.class);
+    private static final Logger logger = LoggerFactory.getLogger(WeeklyChatAnalysisJob.class);
 
     @Autowired
     private WeeklyChatAnalysisService weeklyChatAnalysisService;
@@ -27,14 +25,8 @@ public class ChatAnalysisJob implements Job {
         logger.info("Starting scheduled chat analysis job");
 
         try {
-            // 分析前一天的聊天数据
-            ZonedDateTime yesterday = ZonedDateTime.now().minusDays(1);
-
-            //TODO
-            // chatAnalysisService.analyzeEmployeeChatForDate(yesterday);
-
-            logger.info("Chat analysis job completed successfully for date: {}",
-                       yesterday.toLocalDate());
+            weeklyChatAnalysisService.runWeeklyAnalysis();
+            logger.info("Weekly chat analysis job started");
 
         } catch (Exception e) {
             logger.error("Chat analysis job failed: {}", e.getMessage(), e);

@@ -1,6 +1,9 @@
 package com.example.demo.auditing.config;
 
+import com.example.demo.auditing.job.WeeklyChatAnalysisJob;
 import com.example.demo.auditing.job.ChatDataSyncJob;
+import com.example.demo.auditing.job.DailyChatAnalysisJob;
+
 import org.quartz.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,28 +39,54 @@ public class QuartzSchedulerConfig {
                 .build();
     }
 
-    // /**
-    //  * 聊天分析任务配置
-    //  */
-    // @Bean
-    // public JobDetail chatAnalysisJobDetail() {
-    //     return JobBuilder.newJob(ChatAnalysisJob.class)
-    //             .withIdentity("chatAnalysisJob", "analysisGroup")
-    //             .withDescription("Chat analysis job")
-    //             .storeDurably()
-    //             .build();
-    // }
+    /**
+     * 每日聊天分析任务配置
+     */
+    @Bean
+    public JobDetail dailyChatAnalysisJobDetail() {
+        return JobBuilder.newJob(DailyChatAnalysisJob.class)
+                .withIdentity("dailyChatAnalysisJob", "analysisGroup")
+                .withDescription("Daily chat analysis job")
+                .storeDurably()
+                .build();
+    }
 
-    // /**
-    //  * 聊天分析任务触发器 - 每天凌晨2点执行
-    //  */
-    // @Bean
-    // public Trigger chatAnalysisJobTrigger() {
-    //     return TriggerBuilder.newTrigger()
-    //             .forJob(chatAnalysisJobDetail())
-    //             .withIdentity("chatAnalysisTrigger", "analysisGroup")
-    //             .withDescription("Trigger for chat analysis job")
-    //             .withSchedule(CronScheduleBuilder.cronSchedule("0 0 2 * * ?")) // 每天凌晨2点执行
-    //             .build();
-    // }
+    /**
+     * 聊天分析任务触发器 - 每天10点执行
+     */
+    @Bean
+    public Trigger dailyChatAnalysisJobTrigger() {
+        return TriggerBuilder.newTrigger()
+                .forJob(dailyChatAnalysisJobDetail())
+                .withIdentity("dailyChatAnalysisTrigger", "analysisGroup")
+                .withDescription("Trigger for daily chat analysis job")
+                .withSchedule(CronScheduleBuilder.cronSchedule("0 0 10 * * ?")) // 每天10点执行
+                .build();
+    }
+
+    /**
+     * 每周聊天分析任务配置
+     */
+    @Bean
+    public JobDetail weeklyChatAnalysisJobDetail() {
+        return JobBuilder.newJob(WeeklyChatAnalysisJob.class)
+                .withIdentity("weeklyChatAnalysisJob", "analysisGroup")
+                .withDescription("Weekly chat analysis job")
+                .storeDurably()
+                .build();
+    }
+
+    /**
+     * 每周聊天分析任务触发器 - 每周一16点执行
+     */
+    @Bean
+    public Trigger weeklyChatAnalysisJobTrigger() {
+        return TriggerBuilder.newTrigger()
+                .forJob(weeklyChatAnalysisJobDetail())
+                .withIdentity("weeklyChatAnalysisTrigger", "analysisGroup")
+                .withDescription("Trigger for weekly chat analysis job")
+                .withSchedule(CronScheduleBuilder.cronSchedule("0 0 12 ? * MON")) // 每周一12点执行
+                .build();
+    }
+
 }

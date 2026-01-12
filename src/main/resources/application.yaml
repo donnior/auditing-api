@@ -25,6 +25,7 @@ spring:
 
   quartz:
     job-store-type: jdbc
+    overwrite-existing-jobs: true
     properties:
       org.quartz.jobStore.driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
 
@@ -44,3 +45,10 @@ llm:
     coze:
       app-id: 1185261263158
       apikey: sat_lHVT8MBuo0hC71uO5r6BtuW8zbJES1gmWUprWX4Lfq4Qli6fEpThfmrHSAOWXSWT
+
+security:
+  jwt:
+    # 生产环境请替换成强随机密钥（至少 32 字节），避免泄露
+    secret: "change-me-change-me-change-me-change-me-2026"
+    # 7 天（秒）
+    ttl-seconds: 604800
