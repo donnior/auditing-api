@@ -148,7 +148,14 @@ public class WeeklyChatAnalysisService {
             evaluationDetail.setEvalType(reportType);
             evaluationDetail.setChatStartTime(fromTime);
             evaluationDetail.setChatEndTime(toTime);
-            System.out.println("evaluationDetail: " + evaluationDetail);
+
+            // 检查是否已存在记录，如果存在则替换（使用已有的ID）
+            var existingDetail = evaluationDetailRepository.findByEmployeeIdAndCustomerIdAndEvalTypeAndEvalPeriod(
+                employee.getId(), customer, reportType, reportName);
+            if (existingDetail.isPresent()) {
+                evaluationDetail.setId(existingDetail.get().getId());
+            }
+
             evaluationDetailRepository.save(evaluationDetail);
         }
     }

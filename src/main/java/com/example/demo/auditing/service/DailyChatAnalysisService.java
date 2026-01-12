@@ -41,15 +41,24 @@ public class DailyChatAnalysisService {
     private EvaluationDetailRepository evaluationDetailRepository;
 
     public void runAnalysis() {
-        runAnalysis(ZonedDateTime.now());
+        var now = ZonedDateTime.now();
+        /**
+         * 以当前时间的0点为基准运行分析，跑前一天的数据
+         */
+        var targetDate = now.withHour(0).withMinute(0).withSecond(0).withNano(0);
+        runAnalysis(targetDate);
+        // runAnalysis("2026-01-01");
     }
 
+    /**
+     * 以指定日期的0点基准运行分析，跑前一天的数据
+     */
     public void runAnalysis(String targetDate) {
-        runAnalysis(ZonedDateTime.parse(targetDate + "T00:00:00Z"));
+        var target = ZonedDateTime.parse(targetDate + "T00:01:00Z");
+        runAnalysis(target);
     }
 
     public void runAnalysis(ZonedDateTime time) {
-        // var lastSunday = time.with(DayOfWeek.SUNDAY);
         var employees = employeeRepository.findAll();
         for (var employee : employees) {
             runWeeklyAnalysisForEmployee(employee, time);
@@ -105,6 +114,14 @@ public class DailyChatAnalysisService {
             evaluationDetail.setEvalType(reportType);
             evaluationDetail.setChatStartTime(fromTime);
             evaluationDetail.setChatEndTime(toTime);
+
+            // 检查是否已存在记录，如果存在则替换（使用已有的ID）
+            var existingDetail = evaluationDetailRepository.findByEmployeeIdAndCustomerIdAndEvalTypeAndEvalPeriod(
+                employee.getId(), customer, reportType, reportName);
+            if (existingDetail.isPresent()) {
+                evaluationDetail.setId(existingDetail.get().getId());
+            }
+
             evaluationDetailRepository.save(evaluationDetail);
         }
     }

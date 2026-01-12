@@ -17,8 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TypedReportAnalyser {
 
-    public static final String thirdWeekReportAgentId = "7589909383191543817";
-    public static final String forthWeekReportAgentId = "7589909383191543817";
+    public static final String thirdWeekReportAgentId = "";
+    public static final String forthWeekReportAgentId = "";  // 7589909383191543817
     public static final String firstWeekReportAgentId = "7589575763905577006";
     public static final String secondWeekReportAgentId = "7589575763905577006";
     public static final String within48HoursReportAgentId = "7586960559527510035";
