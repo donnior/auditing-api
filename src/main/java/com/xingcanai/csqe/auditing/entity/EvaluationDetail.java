@@ -84,4 +84,7 @@ public class EvaluationDetail {
     @Column(name = "chat_end_time")
     private ZonedDateTime chatEndTime;   //聊天结束时间
 
+    @Column(name = "biz_date")
+    private String bizDate;   //业务日期
+
 }

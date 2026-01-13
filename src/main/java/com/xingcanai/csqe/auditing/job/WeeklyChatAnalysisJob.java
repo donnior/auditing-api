@@ -25,7 +25,7 @@ public class WeeklyChatAnalysisJob implements Job {
         logger.info("Starting scheduled chat analysis job");
 
         try {
-            weeklyChatAnalysisService.runWeeklyAnalysis();
+            weeklyChatAnalysisService.runAnalysis();
             logger.info("Weekly chat analysis job started");
 
         } catch (Exception e) {

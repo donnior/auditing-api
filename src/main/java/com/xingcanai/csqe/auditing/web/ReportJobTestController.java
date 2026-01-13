@@ -23,7 +23,7 @@ public class ReportJobTestController {
      */
     @GetMapping("")
     public void testReportJob() {
-        weeklyChatAnalysisService.runWeeklyAnalysis();
+        weeklyChatAnalysisService.runAnalysis();
     }
 
     @GetMapping("/daily")

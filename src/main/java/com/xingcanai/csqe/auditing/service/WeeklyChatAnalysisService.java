@@ -4,7 +4,6 @@ import java.time.DayOfWeek;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.time.ZonedDateTime;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,8 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.xingcanai.csqe.auditing.entity.Employee;
-import com.xingcanai.csqe.auditing.entity.EmployeeRepository;
-import com.xingcanai.csqe.auditing.entity.EvaluationDetailRepository;
 import com.xingcanai.csqe.auditing.entity.WxChatMessage;
 import com.xingcanai.csqe.auditing.entity.WxChatMessageRepository;
 
@@ -21,38 +18,30 @@ import com.xingcanai.csqe.auditing.entity.WxChatMessageRepository;
  * 聊天分析服务
  */
 @Service
-public class WeeklyChatAnalysisService {
+public class WeeklyChatAnalysisService extends AbstractChatAnalysisService {
 
     private static final Logger logger = LoggerFactory.getLogger(WeeklyChatAnalysisService.class);
 
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(16);
-
-    @Autowired
-    private EmployeeRepository employeeRepository;
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(8);
 
     @Autowired
     private WxChatMessageRepository wxChatMessageRepository;
 
-    @Autowired
-    private TypedReportAnalyser typedReportAnalyser;
-
-    @Autowired
-    private EvaluationDetailRepository evaluationDetailRepository;
-
-    public void runWeeklyAnalysis() {
-        runWeeklyAnalysis(ZonedDateTime.now());
+    @Override
+    public void runAnalysis() {
+        doRunAnalysis(ZonedDateTime.now());
     }
 
     // 2026-01-05
-    public void runWeeklyAnalysis(String targetDate) {
-        runWeeklyAnalysis(ZonedDateTime.parse(targetDate + "T00:00:00Z"));
+    @Override
+    public void runAnalysis(String targetDate) {
+        doRunAnalysis(ZonedDateTime.parse(targetDate + "T00:00:00Z"));
     }
 
-    public void runWeeklyAnalysis(ZonedDateTime time) {
+    private void doRunAnalysis(ZonedDateTime time) {
         var lastSunday = time.with(DayOfWeek.SUNDAY).minusWeeks(1);
-        var employees = employeeRepository.findAll();
+        var employees = getActiveEmployees();
         for (var employee : employees) {
-            System.out.println("employee: " + employee);
             runWeeklyAnalysisForEmployee(employee, lastSunday);
         }
     }
@@ -70,8 +59,8 @@ public class WeeklyChatAnalysisService {
 
         for (var customer : customers) {
             var reportType = getReportTypeForCustomer(employee, customer, targetSunday);
-            if (typedReportAnalyser.getReportTypes().contains(reportType)) {
-                executorService.submit(() -> runCustomerAnalysisWithType(employee, customer, fromTime, toTime, reportType, reportName));
+            if (isReportTypeSupported(reportType)) {
+                executorService.submit(() -> runCustomerAnalysisWithType(employee, customer, fromTime, toTime, reportType, reportName, reportName));
             }
         }
     }
@@ -135,37 +124,5 @@ public class WeeklyChatAnalysisService {
         };
     }
 
-    private void runCustomerAnalysisWithType(Employee employee, String customer, ZonedDateTime fromTime, ZonedDateTime toTime, String reportType, String reportName) {
-        var messages = getMessages(employee, customer, fromTime, toTime);
-        var evaluationDetail = typedReportAnalyser.runAnalysisForCustomer(employee, customer, messages, reportType);
-        if (evaluationDetail != null) {
-            evaluationDetail.setEmployeeId(employee.getId());
-            evaluationDetail.setEmployeeQwId(employee.getQwId());
-            evaluationDetail.setCustomerId(customer);
-            evaluationDetail.setCustomerName(customer);
-            evaluationDetail.setEvalTime(ZonedDateTime.now().toString());
-            evaluationDetail.setEvalPeriod(reportName);
-            evaluationDetail.setEvalType(reportType);
-            evaluationDetail.setChatStartTime(fromTime);
-            evaluationDetail.setChatEndTime(toTime);
-
-            // 检查是否已存在记录，如果存在则替换（使用已有的ID）
-            var existingDetail = evaluationDetailRepository.findByEmployeeIdAndCustomerIdAndEvalTypeAndEvalPeriod(
-                employee.getId(), customer, reportType, reportName);
-            if (existingDetail.isPresent()) {
-                evaluationDetail.setId(existingDetail.get().getId());
-            }
-
-            evaluationDetailRepository.save(evaluationDetail);
-        }
-    }
-
-    private List<WxChatMessage> getMessages(Employee employee, String customerId, ZonedDateTime fromTime, ZonedDateTime endTime) {
-        long start = System.currentTimeMillis();
-        var messages = wxChatMessageRepository.findChatBetweenEmployeeAndCustomer(employee.getQwId(), customerId, fromTime, endTime);
-        long end = System.currentTimeMillis();
-        System.out.println("getMessages time: " + (end - start));
-        return messages;
-    }
 
 }
