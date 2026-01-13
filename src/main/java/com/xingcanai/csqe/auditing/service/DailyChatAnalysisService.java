@@ -1,6 +1,8 @@
 package com.xingcanai.csqe.auditing.service;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,7 +44,7 @@ public class DailyChatAnalysisService extends AbstractChatAnalysisService {
      * 以指定日期的0点基准运行分析，跑前一天的数据
      */
     public void runAnalysis(String targetDate) {
-        var target = ZonedDateTime.parse(targetDate + "T00:01:00Z");
+        var target = LocalDate.parse(targetDate).atStartOfDay(ZoneId.systemDefault());
         doRunAnalysis(target);
     }
 
@@ -74,7 +76,7 @@ public class DailyChatAnalysisService extends AbstractChatAnalysisService {
             var firstChatTime = firstChat.getMsgTime();
             var rangeEnd = toTime.minusHours(48);
             String reportName = getReportName(firstChatTime);
-            String bizDate = toTime.minusHours(12).toLocalDate().toString();
+            String bizDate = toTime.minusDays(1).toLocalDate().toString();
 
             if(firstChatTime.isAfter(fromTime) && firstChatTime.isBefore(rangeEnd)) {
                 CompletableFuture.runAsync(

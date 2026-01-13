@@ -1,6 +1,7 @@
 package com.xingcanai.csqe;
 
 import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
@@ -61,5 +62,13 @@ public class Test {
         System.out.println("  东八区 23:42:16: " + dbTime.toEpochSecond());
         System.out.println("  UTC    15:42:16: " + utcTime.toEpochSecond());
         System.out.println("  → 时间戳相同，说明是同一个时刻！");
+
+
+        System.out.println("========== 转换为 LocalDate ==========");
+        System.out.println();
+        System.out.println("toLocalDateTime(): " + LocalDate.parse("2026-01-05").atStartOfDay(ZoneId.systemDefault()));
+        System.out.println();
+
+        System.out.println(LocalDate.parse("2026-01-05").atStartOfDay(ZoneId.systemDefault()).minusDays(1).toLocalDate().toString());
     }
 }

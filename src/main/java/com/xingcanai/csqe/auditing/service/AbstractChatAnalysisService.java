@@ -41,7 +41,7 @@ public abstract class AbstractChatAnalysisService {
     public abstract void runAnalysis(String targetDate);
 
 
-    protected void runCustomerAnalysisWithType(Employee employee, String customer, ZonedDateTime fromTime, ZonedDateTime toTime, String reportType, String reportName, String bizDate) {
+    protected void runCustomerAnalysisWithType(Employee employee, String customer, ZonedDateTime fromTime, ZonedDateTime toTime, String reportType, String reportPeriod, String bizDate) {
         var messages = getMessages(employee, customer, fromTime, toTime);
         var evaluationDetail = typedReportAnalyser.runAnalysisForCustomer(employee, customer, messages, reportType);
         if (evaluationDetail != null) {
@@ -50,7 +50,7 @@ public abstract class AbstractChatAnalysisService {
             evaluationDetail.setCustomerId(customer);
             evaluationDetail.setCustomerName(customer);
             evaluationDetail.setEvalTime(ZonedDateTime.now().toString());
-            evaluationDetail.setEvalPeriod(reportName);
+            evaluationDetail.setEvalPeriod(reportPeriod);
             evaluationDetail.setEvalType(reportType);
             evaluationDetail.setChatStartTime(fromTime);
             evaluationDetail.setChatEndTime(toTime);
@@ -58,7 +58,7 @@ public abstract class AbstractChatAnalysisService {
 
             // 检查是否已存在记录，如果存在则替换（使用已有的ID）
             var existingDetail = evaluationDetailRepository.findByEmployeeIdAndCustomerIdAndEvalTypeAndEvalPeriod(
-                employee.getId(), customer, reportType, reportName);
+                employee.getId(), customer, reportType, reportPeriod);
             if (existingDetail.isPresent()) {
                 evaluationDetail.setId(existingDetail.get().getId());
             }

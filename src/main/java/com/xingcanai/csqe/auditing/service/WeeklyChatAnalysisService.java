@@ -1,6 +1,8 @@
 package com.xingcanai.csqe.auditing.service;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.time.ZonedDateTime;
@@ -35,7 +37,7 @@ public class WeeklyChatAnalysisService extends AbstractChatAnalysisService {
     // 2026-01-05
     @Override
     public void runAnalysis(String targetDate) {
-        doRunAnalysis(ZonedDateTime.parse(targetDate + "T00:00:00Z"));
+        doRunAnalysis(LocalDate.parse(targetDate).atStartOfDay(ZoneId.systemDefault()));
     }
 
     private void doRunAnalysis(ZonedDateTime time) {
@@ -47,7 +49,8 @@ public class WeeklyChatAnalysisService extends AbstractChatAnalysisService {
     }
 
     private void runWeeklyAnalysisForEmployee(Employee employee, ZonedDateTime targetSunday) {
-        var reportName = targetSunday.toLocalDate().toString();
+        var reportPeriod = targetSunday.toLocalDate().toString();
+        var bizDate = reportPeriod;
 
         var fromMonday = targetSunday.with(DayOfWeek.MONDAY);
         var toMonday = fromMonday.plusDays(7);
@@ -60,7 +63,7 @@ public class WeeklyChatAnalysisService extends AbstractChatAnalysisService {
         for (var customer : customers) {
             var reportType = getReportTypeForCustomer(employee, customer, targetSunday);
             if (isReportTypeSupported(reportType)) {
-                executorService.submit(() -> runCustomerAnalysisWithType(employee, customer, fromTime, toTime, reportType, reportName, reportName));
+                executorService.submit(() -> runCustomerAnalysisWithType(employee, customer, fromTime, toTime, reportType, reportPeriod, bizDate));
             }
         }
     }
