@@ -127,7 +127,12 @@ public class DailyChatAnalysisService {
     }
 
     private List<WxChatMessage> getMessages(Employee employee, String customerId, ZonedDateTime fromTime, ZonedDateTime endTime) {
-        return wxChatMessageRepository.findChatBetweenEmployeeAndCustomer(employee.getQwId(), customerId, fromTime, endTime);
+        long start = System.currentTimeMillis();
+        var messages = wxChatMessageRepository.findChatBetweenEmployeeAndCustomer(employee.getQwId(), customerId, fromTime, endTime);
+        long end = System.currentTimeMillis();
+        System.out.println("getMessages time: " + (end - start));
+
+        return messages;
     }
 
 }

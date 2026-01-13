@@ -25,7 +25,7 @@ public class WeeklyChatAnalysisService {
 
     private static final Logger logger = LoggerFactory.getLogger(WeeklyChatAnalysisService.class);
 
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(8);
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(16);
 
     @Autowired
     private EmployeeRepository employeeRepository;
@@ -161,7 +161,11 @@ public class WeeklyChatAnalysisService {
     }
 
     private List<WxChatMessage> getMessages(Employee employee, String customerId, ZonedDateTime fromTime, ZonedDateTime endTime) {
-        return wxChatMessageRepository.findChatBetweenEmployeeAndCustomer(employee.getQwId(), customerId, fromTime, endTime);
+        long start = System.currentTimeMillis();
+        var messages = wxChatMessageRepository.findChatBetweenEmployeeAndCustomer(employee.getQwId(), customerId, fromTime, endTime);
+        long end = System.currentTimeMillis();
+        System.out.println("getMessages time: " + (end - start));
+        return messages;
     }
 
 }

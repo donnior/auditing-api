@@ -1,0 +1,5 @@
+security:
+  jwt:
+    # 仅本地开发：绕过认证（不要在生产环境开启）
+    dev-bypass: true
+    dev-bypass-user: "local-dev"

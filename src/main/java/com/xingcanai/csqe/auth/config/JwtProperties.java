@@ -14,6 +14,16 @@ public class JwtProperties {
      */
     private long ttlSeconds = 604800;
 
+    /**
+     * 本地开发环境绕过认证（务必只在 local/dev profile 开启）。
+     */
+    private boolean devBypass = false;
+
+    /**
+     * devBypass 开启时注入的默认用户名。
+     */
+    private String devBypassUser = "local-dev";
+
     public String getSecret() {
         return secret;
     }
@@ -28,5 +38,21 @@ public class JwtProperties {
 
     public void setTtlSeconds(long ttlSeconds) {
         this.ttlSeconds = ttlSeconds;
+    }
+
+    public boolean isDevBypass() {
+        return devBypass;
+    }
+
+    public void setDevBypass(boolean devBypass) {
+        this.devBypass = devBypass;
+    }
+
+    public String getDevBypassUser() {
+        return devBypassUser;
+    }
+
+    public void setDevBypassUser(String devBypassUser) {
+        this.devBypassUser = devBypassUser;
     }
 }
