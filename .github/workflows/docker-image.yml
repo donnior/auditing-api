@@ -1,0 +1,28 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+    env:
+      ALI_REPO_SECRET: ${{ secrets.ALI_REPO_SECRET }}
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set IMAGE_TAG
+      run: echo "IMAGE_TAG=$(date '+%Y%m%d%H%M')" >> $GITHUB_ENV
+    - name: Docker login
+      run: docker login --username=whmaiding registry.cn-shanghai.aliyuncs.com -p $ALI_REPO_SECRET
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag auditing-api:$IMAGE_TAG
+    - name: Build the Docker image
+      run: docker tag auditing-api:$IMAGE_TAG registry.cn-shanghai.aliyuncs.com/maiding/auditing-api:$IMAGE_TAG
+    - name: Docker push
+      run: docker push registry.cn-shanghai.aliyuncs.com/maiding/auditing-api:$IMAGE_TAG
