@@ -28,6 +28,8 @@ public class ChatDataApiClient {
 
     private static final String API_TOKEN = "VoyT09nB2fSlDGbF+NWzPxekKY1ZI/jqDKECSiTK6GoeoyLCARG9SaglnEvSG/WQ";
 
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     public ChatDataApiClient() {
         this.webClient = WebClient.builder()
                 .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024)) // Increase buffer size
@@ -37,8 +39,8 @@ public class ChatDataApiClient {
     /**
      * 获取聊天记录数据
      *
-     * @param startTime 开始时间
-     * @param endTime   结束时间
+     * @param startTime 开始时间, 需要中国时区
+     * @param endTime   结束时间, 需要中国时区
      * @param page      页码
      * @param limit     每页大小
      * @return 聊天记录响应
@@ -47,22 +49,20 @@ public class ChatDataApiClient {
         final int finalPage = (page == null || page < 1) ? 1 : page;
         final int finalLimit = (limit == null) ? 100 : limit;
 
-        logger.info("Fetching chat data page {}...", finalPage);
 
-        // 转换到中国时区后再格式化，确保时间一致性
-        ZoneId chinaZone = ZoneId.of("Asia/Shanghai");
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String startStr = startTime.withZoneSameInstant(chinaZone).format(formatter);
-        String endStr = endTime.withZoneSameInstant(chinaZone).format(formatter);
+        String startStr = startTime.format(formatter);
+        String endStr = endTime.format(formatter);
 
-        System.out.println("startStr: " + startStr);
-        System.out.println("endStr: " + endStr);
+        // System.out.println("startStr: " + startStr);
+        // System.out.println("endStr: " + endStr);
 
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("startDate", startStr);
         requestBody.put("endDate", endStr);
         requestBody.put("page", finalPage);
         requestBody.put("limit", finalLimit);
+
+        logger.info("Fetching chat data with param: {}", requestBody);
 
         return webClient.post()
                 .uri(API_DATA_URL)

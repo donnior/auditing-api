@@ -37,71 +37,14 @@ public class ChatDataSyncService {
     /**
      * 同步指定时间范围的聊天数据
      */
-    @Transactional
     public void syncChatDataByTimeRange(ZonedDateTime startTime, ZonedDateTime endTime) {
-        logger.info("Starting chat data sync from {} to {}", startTime, endTime);
+        ZoneId chinaZone = ZoneId.of("Asia/Shanghai");
+        startTime = startTime.withZoneSameInstant(chinaZone);
+        endTime = endTime.withZoneSameInstant(chinaZone);
 
-        // ZonedDateTime currentTime = startTime;
-        // int totalSynced = 0;
-
-        // while (currentTime.isBefore(endTime)) {
-        //     try {
-        //         ChatDataResponse response = chatDataApiClient.fetchChatData(currentTime, 1000).block();
-
-        //         if (response == null || response.getItems() == null || response.getItems().isEmpty()) {
-        //             logger.info("No more chat data to sync for time {}", currentTime);
-        //             break;
-        //         }
-
-        //         List<WxCpChatMsg> chatMessages = convertToEntities(response.getItems());
-        //         int savedCount = saveChatMessages(chatMessages);
-        //         totalSynced += savedCount;
-
-        //         logger.info("Synced {} messages for time {}", savedCount, currentTime);
-
-        //         // 更新时间为最后一条消息的时间
-        //         if (!response.getItems().isEmpty()) {
-        //             ChatDataResponse.ChatMessageItem lastItem = response.getItems().get(response.getItems().size() - 1);
-        //             currentTime = lastItem.getMsgTime().plusNanos(1); // 避免重复获取
-        //         }
-
-        //         // 如果返回的数据少于请求数量，说明已经到了最后
-        //         if (response.getItems().size() < 1000) {
-        //             break;
-        //         }
-
-        //     } catch (Exception e) {
-        //         logger.error("Error syncing chat data for time {}: {}", currentTime, e.getMessage(), e);
-        //         break;
-        //     }
-        // }
-
-        logger.info("Chat data sync completed. Total synced: {} messages", 10);
-    }
-
-    /**
-     * 增量同步聊天数据
-     */
-    // @Transactional // Removed to avoid long-running transaction
-    public void incrementalSyncChatData() {
-        logger.info("Starting incremental chat data sync");
+        logger.info("Syncing chat data from {} to {}", startTime, endTime);
 
         try {
-            // 1. Determine start time
-            ZonedDateTime startTime;
-            WxChatMessage lastMsg = wxCpChatMsgRepository.findTopByOrderByMsgTimeDesc();
-            if (lastMsg != null && lastMsg.getMsgTime() != null) {
-                startTime = lastMsg.getMsgTime();
-            } else {
-                // Default to 7 days ago if no data
-                startTime = ZonedDateTime.now().minusDays(10);
-            }
-
-            ZonedDateTime endTime = ZonedDateTime.now();
-
-            logger.info("Syncing chat data from {} to {}",
-                startTime.withZoneSameInstant(ZoneId.systemDefault()), endTime.withZoneSameInstant(ZoneId.systemDefault()));
-
             int page = 1;
             int limit = 100;
             boolean hasMore = true;
@@ -110,7 +53,8 @@ public class ChatDataSyncService {
             while (hasMore) {
                 ChatDataResponse response = chatDataApiClient.fetchChatData(startTime, endTime, page, limit).block();
 
-                if (response == null || response.getCode() == null || response.getCode() != 200 || response.getData() == null) {
+                if (response == null || response.getCode() == null || response.getCode() != 200
+                        || response.getData() == null) {
                     logger.error("Failed to fetch chat data: response is null or invalid");
                     break;
                 }
@@ -147,6 +91,24 @@ public class ChatDataSyncService {
         } catch (Exception e) {
             logger.error("Error during incremental chat data sync: {}", e.getMessage(), e);
         }
+
+    }
+
+    public void incrementalSyncChatData() {
+        logger.info("Starting incremental chat data sync");
+        ZonedDateTime startTime = getStartTime();
+        ZonedDateTime endTime = ZonedDateTime.now();
+        syncChatDataByTimeRange(startTime, endTime);
+
+    }
+
+    private ZonedDateTime getStartTime() {
+        WxChatMessage lastMsg = wxCpChatMsgRepository.findTopByOrderByMsgTimeDesc();
+        if (lastMsg != null && lastMsg.getMsgTime() != null) {
+            logger.info("Use last message time: {}", lastMsg.getMsgTime());
+            return lastMsg.getMsgTime();
+        }
+        return ZonedDateTime.now().minusDays(14);
     }
 
     /**

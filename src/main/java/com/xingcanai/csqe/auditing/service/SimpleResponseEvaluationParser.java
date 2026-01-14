@@ -9,6 +9,7 @@ import java.util.List;
 
 import com.xingcanai.csqe.auditing.entity.EvaluationDetail;
 import com.xingcanai.csqe.util.Maps;
+import com.xingcanai.csqe.util.Strings;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,6 +34,9 @@ public class SimpleResponseEvaluationParser {
     }
 
     public EvaluationDetail parseResponse(String response, String reportType) {
+        if (Strings.isEmpty(response)) {
+            return null;
+        }
         log.info("Parse response: {}", response);
         var lines = Arrays.asList(response.split("\n"));
 

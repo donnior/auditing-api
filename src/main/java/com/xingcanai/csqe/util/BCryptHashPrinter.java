@@ -11,7 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 public class BCryptHashPrinter {
 
     public static void main(String[] args) {
-        String plain = System.getenv("PLAIN_PASSWORD");
+        String plain = "123456";
         if (plain == null || plain.isBlank()) {
             System.err.println("Missing env var: PLAIN_PASSWORD");
             System.exit(2);

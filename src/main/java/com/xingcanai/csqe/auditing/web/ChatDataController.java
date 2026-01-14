@@ -1,7 +1,6 @@
 package com.xingcanai.csqe.auditing.web;
 
 import com.xingcanai.csqe.auditing.service.ChatDataSyncService;
-import com.xingcanai.csqe.auditing.service.WeeklyChatAnalysisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -19,9 +18,6 @@ public class ChatDataController {
 
     @Autowired
     private ChatDataSyncService chatDataSyncService;
-
-    @Autowired
-    private WeeklyChatAnalysisService weeklyChatAnalysisService;
 
     /**
      * 手动触发聊天数据同步
@@ -48,19 +44,6 @@ public class ChatDataController {
             result.put("success", false);
             result.put("message", "同步失败：" + e.getMessage());
         }
-
-        return result;
-    }
-
-    /**
-     * 手动触发聊天分析
-     */
-    @PostMapping("/analyze")
-    public Map<String, Object> analyzeChatData(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime date) {
-
-        Map<String, Object> result = new HashMap<>();
-
 
         return result;
     }
