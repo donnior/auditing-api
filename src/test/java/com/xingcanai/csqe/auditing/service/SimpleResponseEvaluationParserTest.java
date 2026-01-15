@@ -17,7 +17,7 @@ class SimpleResponseEvaluationParserTest {
     }
 
     @Test
-    void testParseResponse_所有字段都为是() {
+    void testParseResponse_allFieldsYes() {
         // 准备测试数据
         String response = """
                 完成资料发送：是
@@ -42,7 +42,7 @@ class SimpleResponseEvaluationParserTest {
     }
 
     @Test
-    void testParseResponse_所有字段都为否() {
+    void testParseResponse_allFieldsNo() {
         // 准备测试数据
         String response = """
                 完成资料发送：否
@@ -67,7 +67,7 @@ class SimpleResponseEvaluationParserTest {
     }
 
     @Test
-    void testParseResponse_部分字段为是() {
+    void testParseResponse_someFieldsYes() {
         // 准备测试数据
         String response = """
                 完成资料发送：是
@@ -92,7 +92,7 @@ class SimpleResponseEvaluationParserTest {
     }
 
     @Test
-    void testParseResponse_缺少某些关键词() {
+    void testParseResponse_missingKeywords() {
         // 准备测试数据 - 只包含部分关键词
         String response = """
                 完成资料发送：是
@@ -113,7 +113,7 @@ class SimpleResponseEvaluationParserTest {
     }
 
     @Test
-    void testParseResponse_空字符串() {
+    void testParseResponse_emptyString() {
         // 准备测试数据
         String response = "";
 
@@ -131,7 +131,7 @@ class SimpleResponseEvaluationParserTest {
     }
 
     @Test
-    void testParseResponse_包含额外文本() {
+    void testParseResponse_withExtraText() {
         // 准备测试数据 - 包含额外的说明文本
         String response = """
                 评估报告：
@@ -158,7 +158,7 @@ class SimpleResponseEvaluationParserTest {
     }
 
     @Test
-    void testParseResponse_关键词在行首() {
+    void testParseResponse_keywordAtLineStart() {
         // 准备测试数据
         String response = """
                 完成资料发送是
@@ -183,7 +183,7 @@ class SimpleResponseEvaluationParserTest {
     }
 
     @Test
-    void testParseResponse_不同报告类型() {
+    void testParseResponse_differentReportTypes() {
         // 准备测试数据
         String response = """
                 完成资料发送：是
@@ -207,7 +207,7 @@ class SimpleResponseEvaluationParserTest {
     }
 
     @Test
-    void testParseResponse_特殊字符和空格() {
+    void testParseResponse_specialCharsAndSpaces() {
         // 准备测试数据 - 包含多余空格和特殊字符
         String response = """
                   完成资料发送  ：  是
