@@ -4,6 +4,8 @@ import java.time.ZonedDateTime;
 import java.time.LocalDate;
 import java.time.ZoneId;
 
+import com.xingcanai.csqe.util.DateTimes;
+
 public class Test {
     public static void main(String[] args) {
         System.out.println("========== 数据库时间转换演示 ==========");
@@ -69,5 +71,7 @@ public class Test {
         System.out.println();
 
         System.out.println(LocalDate.parse("2026-01-05").atStartOfDay(ZoneId.systemDefault()).minusDays(1).toLocalDate().toString());
+
+        System.out.println(DateTimes.nowIsoOffsetString());
     }
 }

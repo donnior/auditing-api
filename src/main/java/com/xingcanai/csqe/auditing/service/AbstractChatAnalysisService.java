@@ -14,6 +14,7 @@ import com.xingcanai.csqe.auditing.entity.EmployeeRepository;
 import com.xingcanai.csqe.auditing.entity.EvaluationDetailRepository;
 import com.xingcanai.csqe.auditing.entity.WxChatMessage;
 import com.xingcanai.csqe.auditing.entity.WxChatMessageRepository;
+import com.xingcanai.csqe.util.DateTimes;
 
 /**
  * 聊天分析服务
@@ -49,7 +50,7 @@ public abstract class AbstractChatAnalysisService {
             evaluationDetail.setEmployeeQwId(employee.getQwId());
             evaluationDetail.setCustomerId(customer);
             evaluationDetail.setCustomerName(customer);
-            evaluationDetail.setEvalTime(ZonedDateTime.now().toString());
+            evaluationDetail.setEvalTime(DateTimes.nowIsoOffsetString());
             evaluationDetail.setEvalPeriod(reportPeriod);
             evaluationDetail.setEvalType(reportType);
             evaluationDetail.setChatStartTime(fromTime);
