@@ -3,6 +3,9 @@ package com.xingcanai.csqe.auditing.web;
 import com.xingcanai.csqe.auditing.entity.WeeklyReportSummary;
 import com.xingcanai.csqe.auditing.entity.WeeklyReportSummaryRepository;
 import com.xingcanai.csqe.auditing.entity.WeeklyReportSummarySpec;
+import com.xingcanai.csqe.auditing.entity.EvaluationDetail;
+import com.xingcanai.csqe.auditing.entity.EvaluationDetailRepository;
+import com.xingcanai.csqe.auditing.entity.EvaluationDetailSpec;
 import com.xingcanai.csqe.common.XCPageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,6 +22,9 @@ public class WeeklyReportSummaryController {
 
     @Autowired
     private WeeklyReportSummaryRepository weeklyReportSummaryRepository;
+
+    @Autowired
+    private EvaluationDetailRepository evaluationDetailRepository;
 
     /**
      * 周报汇总列表（支持过滤和排序）
@@ -47,6 +53,25 @@ public class WeeklyReportSummaryController {
     @GetMapping("/{id}")
     public WeeklyReportSummary getWeeklyReportSummary(@PathVariable String id) {
         return weeklyReportSummaryRepository.findById(id).orElseThrow(() -> new RuntimeException("Weekly report summary not found"));
+    }
+
+    /**
+     * 周报汇总维度详情列表
+     *
+     * @param id 汇总ID
+     * @param metric 维度标识
+     */
+    @GetMapping("/{id}/details")
+    public Page<EvaluationDetail> listWeeklyReportSummaryDetails(
+            @PathVariable String id,
+            @RequestParam String metric,
+            XCPageRequest pageRequest) {
+
+        WeeklyReportSummary summary = weeklyReportSummaryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Weekly report summary not found"));
+
+        Specification<EvaluationDetail> spec = EvaluationDetailSpec.bySummaryAndMetric(summary, metric);
+        return evaluationDetailRepository.findAll(spec, pageRequest.toPageRequest());
     }
 
 
