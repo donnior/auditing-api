@@ -2,6 +2,7 @@ package com.xingcanai.csqe.auditing.config;
 
 import com.xingcanai.csqe.auditing.job.WeeklyChatAnalysisJob;
 import com.xingcanai.csqe.auditing.job.ChatDataSyncJob;
+import com.xingcanai.csqe.auditing.job.ChatUserSyncJob;
 import com.xingcanai.csqe.auditing.job.DailyChatAnalysisJob;
 
 import org.quartz.*;
@@ -36,6 +37,31 @@ public class QuartzSchedulerConfig {
                 .withIdentity("chatDataSyncTrigger", "syncGroup")
                 .withDescription("Trigger for chat data sync job")
                 .withSchedule(CronScheduleBuilder.cronSchedule("0 0 * * * ?")) // 每小时整点执行
+                .build();
+    }
+
+    /**
+     * 学员（卡片用户）同步任务配置
+     */
+    @Bean
+    public JobDetail chatUserSyncJobDetail() {
+        return JobBuilder.newJob(ChatUserSyncJob.class)
+                .withIdentity("chatUserSyncJob", "syncGroup")
+                .withDescription("Chat user synchronization job")
+                .storeDurably()
+                .build();
+    }
+
+    /**
+     * 学员（卡片用户）同步任务触发器 - 每小时执行一次（错峰）
+     */
+    @Bean
+    public Trigger chatUserSyncJobTrigger() {
+        return TriggerBuilder.newTrigger()
+                .forJob(chatUserSyncJobDetail())
+                .withIdentity("chatUserSyncTrigger", "syncGroup")
+                .withDescription("Trigger for chat user sync job")
+                .withSchedule(CronScheduleBuilder.cronSchedule("0 10 * * * ?")) // 每小时第10分钟执行
                 .build();
     }
 

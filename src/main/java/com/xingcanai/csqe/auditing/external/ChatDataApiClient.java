@@ -2,7 +2,6 @@ package com.xingcanai.csqe.auditing.external;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -10,6 +9,7 @@ import reactor.core.publisher.Mono;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -86,14 +86,43 @@ public class ChatDataApiClient {
 
 
     public Mono<ChatUserResponse> fetchChatUser(Integer page, Integer limit) {
+        return fetchChatUser(page, limit, null, null);
+    }
+
+    /**
+     * 获取在读学员课程周序列表（支持按更新时间增量获取）
+     *
+     * @param page            页码（从 1 开始）
+     * @param limit           每页大小（最大 100）
+     * @param updateStartTime 更新时间范围开始（可选，需中国时区）
+     * @param updateEndTime   更新时间范围结束（可选，需中国时区）
+     */
+    public Mono<ChatUserResponse> fetchChatUser(Integer page, Integer limit, ZonedDateTime updateStartTime, ZonedDateTime updateEndTime) {
         final int finalPage = (page == null || page < 1) ? 1 : page;
         final int finalLimit = (limit == null) ? 100 : limit;
 
-        logger.info("Fetching chat user page {}...", finalPage);
+        ZoneId chinaZone = ZoneId.of("Asia/Shanghai");
+        if (updateStartTime != null) {
+            updateStartTime = updateStartTime.withZoneSameInstant(chinaZone);
+        }
+        if (updateEndTime != null) {
+            updateEndTime = updateEndTime.withZoneSameInstant(chinaZone);
+        }
+
+        logger.info("Fetching chat user page {}... updateStartTime={}, updateEndTime={}",
+                finalPage,
+                updateStartTime == null ? null : updateStartTime.format(formatter),
+                updateEndTime == null ? null : updateEndTime.format(formatter));
 
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("page", finalPage);
         requestBody.put("limit", finalLimit);
+        if (updateStartTime != null) {
+            requestBody.put("updateStartTime", updateStartTime.format(formatter));
+        }
+        if (updateEndTime != null) {
+            requestBody.put("updateEndTime", updateEndTime.format(formatter));
+        }
 
         return webClient.post()
                 .uri(API_USER_URL)
@@ -104,6 +133,15 @@ public class ChatDataApiClient {
                 .bodyToMono(ChatUserResponse.class)
                 .doOnSuccess(response -> {
                     if (response != null && response.getCode() == 200 && response.getData() != null) {
+                        // 保底：按更新时间倒序排列，便于分页 + 增量同步场景
+                        if (response.getData().getList() != null) {
+                            response.getData().getList().sort(
+                                    Comparator.comparing(
+                                            ChatUserResponse.ChatUserItem::getUpdateTime,
+                                            Comparator.nullsLast(Comparator.naturalOrder())
+                                    ).reversed()
+                            );
+                        }
                         logger.info("Successfully fetched page {} of chat users. Total: {}",
                                 finalPage, response.getData().getTotal());
                     } else {

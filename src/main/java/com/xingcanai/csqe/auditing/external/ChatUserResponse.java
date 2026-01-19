@@ -47,7 +47,16 @@ public class ChatUserResponse {
         private String externalUserid;
         private String externalName;
         private String cardName;
-        private String startTime;
+
+        @com.fasterxml.jackson.annotation.JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+        private ZonedDateTime startTime;
+
+        @com.fasterxml.jackson.annotation.JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+        private ZonedDateTime createTime;
+
+        @com.fasterxml.jackson.annotation.JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+        private ZonedDateTime updateTime;
+
         private Integer weekNumber;
     }
 }
