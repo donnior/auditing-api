@@ -2,8 +2,11 @@ package com.xingcanai.csqe.auditing.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import lombok.Data;
 import lombok.ToString;
 
@@ -86,5 +89,9 @@ public class EvaluationDetail {
 
     @Column(name = "biz_date")
     private String bizDate;   //业务日期
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "customer_id", referencedColumnName = "external_userid", insertable = false, updatable = false)
+    private WxCardUser cardUser;
 
 }
