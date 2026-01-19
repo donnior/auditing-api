@@ -1,0 +1,5 @@
+spring:
+  datasource:
+    url: "jdbc:postgresql://auditing-db:5432/xcauditing"
+    username: "postgres"
+    password: ""

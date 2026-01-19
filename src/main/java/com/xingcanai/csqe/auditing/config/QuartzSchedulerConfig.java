@@ -27,7 +27,7 @@ public class QuartzSchedulerConfig {
     }
 
     /**
-     * 聊天数据同步任务触发器 - 每4小时执行一次
+     * 聊天数据同步任务触发器 - 每小时执行一次
      */
     @Bean
     public Trigger chatDataSyncJobTrigger() {
@@ -35,7 +35,7 @@ public class QuartzSchedulerConfig {
                 .forJob(chatDataSyncJobDetail())
                 .withIdentity("chatDataSyncTrigger", "syncGroup")
                 .withDescription("Trigger for chat data sync job")
-                .withSchedule(CronScheduleBuilder.cronSchedule("0 0 0/4 * * ?")) // 每4小时整点执行
+                .withSchedule(CronScheduleBuilder.cronSchedule("0 0 * * * ?")) // 每小时整点执行
                 .build();
     }
 
@@ -85,7 +85,7 @@ public class QuartzSchedulerConfig {
                 .forJob(weeklyChatAnalysisJobDetail())
                 .withIdentity("weeklyChatAnalysisTrigger", "analysisGroup")
                 .withDescription("Trigger for weekly chat analysis job")
-                .withSchedule(CronScheduleBuilder.cronSchedule("0 0 12 ? * 1")) // 每周一12点执行
+                .withSchedule(CronScheduleBuilder.cronSchedule("0 0 13 ? * 2")) // 每周一12点执行
                 .build();
     }
 
