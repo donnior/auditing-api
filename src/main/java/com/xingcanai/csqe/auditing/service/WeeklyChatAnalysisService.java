@@ -31,6 +31,7 @@ public class WeeklyChatAnalysisService extends AbstractChatAnalysisService {
 
     @Override
     public void runAnalysis() {
+        logger.info("runWeeklyAnalysis");
         doRunAnalysis(ZonedDateTime.now());
     }
 
