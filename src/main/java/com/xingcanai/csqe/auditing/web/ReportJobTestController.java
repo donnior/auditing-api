@@ -1,6 +1,7 @@
 package com.xingcanai.csqe.auditing.web;
 
 import com.xingcanai.csqe.auditing.service.WeeklyChatAnalysisService;
+import com.xingcanai.csqe.util.Strings;
 import com.xingcanai.csqe.auditing.service.DailyChatAnalysisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -27,8 +28,12 @@ public class ReportJobTestController {
     }
 
     @GetMapping("/daily")
-    public void testDailyReportJob() {
-        dailyChatAnalysisService.runAnalysis();
+    public void testDailyReportJob(@RequestParam(required = false, name = "target_date") String targetDate) {
+        if(Strings.isNotEmpty(targetDate)) {
+            dailyChatAnalysisService.runAnalysis(targetDate);
+        } else {
+            dailyChatAnalysisService.runAnalysis();
+        }
     }
 
 }
