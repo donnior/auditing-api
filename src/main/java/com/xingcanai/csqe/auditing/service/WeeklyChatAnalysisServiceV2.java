@@ -14,21 +14,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.xingcanai.csqe.auditing.entity.Employee;
-import com.xingcanai.csqe.auditing.entity.WxChatMessage;
-import com.xingcanai.csqe.auditing.entity.WxChatMessageRepository;
+import com.xingcanai.csqe.auditing.entity.WxCardUser;
+import com.xingcanai.csqe.auditing.entity.WxCardUserRepository;
 
 /**
  * 聊天分析服务
  */
 @Service
-public class WeeklyChatAnalysisService extends AbstractChatAnalysisService {
+public class WeeklyChatAnalysisServiceV2 extends AbstractChatAnalysisService {
 
     private static final Logger logger = LoggerFactory.getLogger(WeeklyChatAnalysisService.class);
 
     private static final ExecutorService executorService = Executors.newFixedThreadPool(8);
 
     @Autowired
-    private WxChatMessageRepository wxChatMessageRepository;
+    private WxCardUserRepository wxCardUserRepository;
 
     @Override
     public void runAnalysis() {
@@ -54,11 +54,9 @@ public class WeeklyChatAnalysisService extends AbstractChatAnalysisService {
         var reportPeriod = targetSunday.toLocalDate().toString();
         var bizDate = reportPeriod;
 
-        var fromMonday = targetSunday.with(DayOfWeek.MONDAY);
-        var toMonday = fromMonday.plusDays(7);
-
-        ZonedDateTime fromTime = fromMonday.withHour(0).withMinute(0).withSecond(0);
-        ZonedDateTime toTime = toMonday.withHour(0).withMinute(0).withSecond(0);
+        ZonedDateTime fromTime = targetSunday.minusDays(30).withHour(0).withMinute(0).withSecond(0);
+        // ZonedDateTime toTime = toMonday.withHour(0).withMinute(0).withSecond(0);
+        ZonedDateTime toTime = targetSunday.minusDays(2).withHour(0).withMinute(0).withSecond(9);
 
         var customers = getCustomersByEmployeeAndTimeRange(employee, fromTime, toTime);
 
@@ -70,23 +68,14 @@ public class WeeklyChatAnalysisService extends AbstractChatAnalysisService {
         }
     }
 
-    private List<String> getCustomersByEmployeeAndTimeRange(Employee employee, ZonedDateTime fromTime, ZonedDateTime toTime) {
-        return wxChatMessageRepository.findCustomersByEmployeeAndTimeRange(employee.getQwId(), fromTime, toTime);
+    private List<WxCardUser> getCustomersByEmployeeAndTimeRange(Employee employee, ZonedDateTime fromTime, ZonedDateTime toTime) {
+        return wxCardUserRepository.findByEmployeeQwidAndTimeRange(employee.getQwId(), fromTime, toTime);
     }
 
-    private ZonedDateTime getCustomerAddTimeWithEmployee(Employee employee, String customerId) {
-        WxChatMessage firstChat = wxChatMessageRepository.findFirstChatBetweenEmployeeAndCustomer(employee.getQwId(), customerId);
-        if (firstChat == null) {
-            logger.warn("No chat history found between employee {} and customer {}", employee.getQwId(), customerId);
-            return null; // 没有聊天记录，返回空
-        }
-        return firstChat.getMsgTime();
-    }
-
-    private String getReportTypeForCustomer(Employee employee, String customerId, ZonedDateTime targetSunday) {
+    private String getReportTypeForCustomer(Employee employee, WxCardUser customer, ZonedDateTime targetSunday) {
         // 获取员工和客户之间最早的一条聊天记录
-        ZonedDateTime firstChatTime = getCustomerAddTimeWithEmployee(employee, customerId);
-        logger.debug("First chat time between employee {} and customer {}: {}", employee.getQwId(), customerId, firstChatTime);
+        ZonedDateTime firstChatTime = customer.getStartTime();
+        logger.debug("First chat time between employee {} and customer {}: {}", employee.getQwId(), customer.getExternalUserid(), firstChatTime);
 
         // 找到第一条聊天记录所在周的周四结束时间（周四23:59:59）
         ZonedDateTime thursdayEnd = firstChatTime.with(DayOfWeek.THURSDAY)
@@ -107,7 +96,7 @@ public class WeeklyChatAnalysisService extends AbstractChatAnalysisService {
         }
         // 否则，在周四结束之前（周日、周一、周二、周三、周四），本周周四就是第一周
 
-        logger.debug("First week Sunday for customer {}: {}", customerId, firstWeekSunday);
+        logger.debug("First week Sunday for customer {}: {}", customer.getExternalUserid(), firstWeekSunday);
 
         // 计算目标周日相对于第一周周日是第几周
         long weeksBetween = java.time.temporal.ChronoUnit.WEEKS.between(
@@ -117,7 +106,7 @@ public class WeeklyChatAnalysisService extends AbstractChatAnalysisService {
 
         int weekNumber = (int) weeksBetween + 1; // +1 因为第一周是1，不是0
 
-        logger.debug("Week number for customer {} at target Sunday {}: {}", customerId, targetSunday, weekNumber);
+        logger.debug("Week number for customer {} at target Sunday {}: {}", customer.getExternalUserid(), targetSunday, weekNumber);
 
         // 根据周数返回报告类型
         return switch (weekNumber) {

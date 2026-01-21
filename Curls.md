@@ -30,3 +30,7 @@ curl -X POST \
     "updateEndTime": "2026-01-15 23:45:00"
   }'
 ```
+
+curl 'https://zj.xingcanai.com/auditing-api/report-job-test/daily?target_date=2026-01-11' \
+  -H 'Accept: application/json, text/plain, */*' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc2ODgxMDY4NiwiZXhwIjoxNzY5NDE1NDg2fQ.eWtssGFzrP37WLXlk4Umg1hGM2aDAD4DOv71ddhID0M'

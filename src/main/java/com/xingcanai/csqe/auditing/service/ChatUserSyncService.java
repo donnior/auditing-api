@@ -124,6 +124,7 @@ public class ChatUserSyncService {
             WxCardUser entity = new WxCardUser();
             entity.setExternalUserid(item.getExternalUserid());
             entity.setExternalName(item.getExternalName());
+            entity.setEmployeeQwid(item.getUserid());
             entity.setCardName(item.getCardName());
             entity.setStartTime(item.getStartTime());
             entity.setCreateTime(item.getCreateTime());

@@ -15,21 +15,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.xingcanai.csqe.auditing.entity.Employee;
-import com.xingcanai.csqe.auditing.entity.WxChatMessage;
-import com.xingcanai.csqe.auditing.entity.WxChatMessageRepository;
+import com.xingcanai.csqe.auditing.entity.WxCardUser;
+import com.xingcanai.csqe.auditing.entity.WxCardUserRepository;
 
 /**
  * 聊天分析服务
  */
 @Service
-public class DailyChatAnalysisService extends AbstractChatAnalysisService {
+public class DailyChatAnalysisServiceV2 extends AbstractChatAnalysisService {
 
     private static final Logger logger = LoggerFactory.getLogger(DailyChatAnalysisService.class);
 
     private static final ExecutorService executorService = Executors.newFixedThreadPool(8);
 
     @Autowired
-    private WxChatMessageRepository wxChatMessageRepository;
+    private WxCardUserRepository wxCardUserRepository;
 
     public void runAnalysis() {
         var now = ZonedDateTime.now();
@@ -64,8 +64,8 @@ public class DailyChatAnalysisService extends AbstractChatAnalysisService {
         return reportName;
     }
 
-    private List<String> getCustomersByEmployeeAndTimeRange(Employee employee, ZonedDateTime fromTime, ZonedDateTime toTime) {
-        return wxChatMessageRepository.findCustomersByEmployeeAndTimeRange(employee.getQwId(), fromTime, toTime);
+    private List<WxCardUser> getCustomersByEmployeeAndTimeRange(Employee employee, ZonedDateTime fromTime, ZonedDateTime toTime) {
+        return wxCardUserRepository.findByEmployeeQwidAndTimeRange(employee.getQwId(), fromTime, toTime);
     }
 
     private void runWeeklyAnalysisForEmployee(Employee employee, ZonedDateTime time) {
@@ -73,12 +73,10 @@ public class DailyChatAnalysisService extends AbstractChatAnalysisService {
         var toTime = time;
         var fromTime = toTime.minusHours(72);
 
-        // has chat in last 72 hours
         var customers = getCustomersByEmployeeAndTimeRange(employee, fromTime, toTime);
 
         for (var customer : customers) {
-            WxChatMessage firstChat = wxChatMessageRepository.findFirstChatBetweenEmployeeAndCustomer(employee.getQwId(), customer);
-            var firstChatTime = firstChat.getMsgTime();
+            var firstChatTime = customer.getStartTime();
             var rangeEnd = toTime.minusHours(48);
             String reportName = getReportName(firstChatTime);
             String bizDate = toTime.minusDays(1).toLocalDate().toString();

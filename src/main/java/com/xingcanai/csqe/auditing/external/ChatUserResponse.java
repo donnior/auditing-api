@@ -47,6 +47,7 @@ public class ChatUserResponse {
         private String externalUserid;
         private String externalName;
         private String cardName;
+        private String userid;
 
         @com.fasterxml.jackson.annotation.JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
         private ZonedDateTime startTime;

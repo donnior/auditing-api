@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.xingcanai.csqe.auditing.entity.Employee;
 import com.xingcanai.csqe.auditing.entity.EmployeeRepository;
 import com.xingcanai.csqe.auditing.entity.EvaluationDetailRepository;
+import com.xingcanai.csqe.auditing.entity.WxCardUser;
 import com.xingcanai.csqe.auditing.entity.WxChatMessage;
 import com.xingcanai.csqe.auditing.entity.WxChatMessageRepository;
 import com.xingcanai.csqe.util.DateTimes;
@@ -42,14 +43,14 @@ public abstract class AbstractChatAnalysisService {
     public abstract void runAnalysis(String targetDate);
 
 
-    protected void runCustomerAnalysisWithType(Employee employee, String customer, ZonedDateTime fromTime, ZonedDateTime toTime, String reportType, String reportPeriod, String bizDate) {
-        var messages = getMessages(employee, customer, fromTime, toTime);
-        var evaluationDetail = typedReportAnalyser.runAnalysisForCustomer(employee, customer, messages, reportType);
+    protected void runCustomerAnalysisWithType(Employee employee, WxCardUser customer, ZonedDateTime fromTime, ZonedDateTime toTime, String reportType, String reportPeriod, String bizDate) {
+        var messages = getMessages(employee, customer.getExternalUserid(), fromTime, toTime);
+        var evaluationDetail = typedReportAnalyser.runAnalysisForCustomer(employee, customer.getExternalUserid(), messages, reportType);
         if (evaluationDetail != null) {
             evaluationDetail.setEmployeeId(employee.getId());
             evaluationDetail.setEmployeeQwId(employee.getQwId());
-            evaluationDetail.setCustomerId(customer);
-            evaluationDetail.setCustomerName(customer);
+            evaluationDetail.setCustomerId(customer.getExternalUserid());
+            evaluationDetail.setCustomerName(customer.getExternalName());
             evaluationDetail.setEvalTime(DateTimes.nowIsoOffsetString());
             evaluationDetail.setEvalPeriod(reportPeriod);
             evaluationDetail.setEvalType(reportType);
@@ -59,7 +60,7 @@ public abstract class AbstractChatAnalysisService {
 
             // 检查是否已存在记录，如果存在则替换（使用已有的ID）
             var existingDetail = evaluationDetailRepository.findByEmployeeIdAndCustomerIdAndEvalTypeAndEvalPeriod(
-                employee.getId(), customer, reportType, reportPeriod);
+                employee.getId(), customer.getExternalUserid(), reportType, reportPeriod);
             if (existingDetail.isPresent()) {
                 evaluationDetail.setId(existingDetail.get().getId());
             }

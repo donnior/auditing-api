@@ -27,6 +27,9 @@ public class WxCardUser {
     @Column(name = "external_name")
     private String externalName;
 
+    @Column(name = "employee_qwid")
+    private String employeeQwid;
+
     @Column(name = "card_name")
     private String cardName;
 
@@ -42,4 +45,3 @@ public class WxCardUser {
     @Column(name = "week_number")
     private Integer weekNumber;
 }
-
