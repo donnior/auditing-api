@@ -6,9 +6,11 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.xingcanai.csqe.auditing.config.TypedReportAnalysisMockProperties;
 import com.xingcanai.csqe.auditing.entity.Employee;
 import com.xingcanai.csqe.auditing.entity.EvaluationDetail;
 import com.xingcanai.csqe.auditing.entity.WxChatMessage;
+import com.xingcanai.csqe.auditing.mock.TypedReportAnalysisMockResponseProvider;
 import com.xingcanai.csqe.util.Strings;
 
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TypedReportAnalyser {
 
-    public static final String thirdWeekReportAgentId = "";
-    public static final String forthWeekReportAgentId = "";  // 7589909383191543817
+    public static final String thirdWeekReportAgentId = "7589909383191543817";
+    public static final String forthWeekReportAgentId = "7589909383191543817";  // 7589909383191543817
     public static final String firstWeekReportAgentId = "7589575763905577006";
     public static final String secondWeekReportAgentId = "7586960559527510035";
     public static final String within48HoursReportAgentId = "7586960559527510035";
@@ -35,6 +37,12 @@ public class TypedReportAnalyser {
     @Autowired
     private SimpleResponseEvaluationParser simpleResponseEvaluationParser;
 
+    @Autowired
+    private TypedReportAnalysisMockProperties mockProperties;
+
+    @Autowired
+    private TypedReportAnalysisMockResponseProvider mockResponseProvider;
+
     public EvaluationDetail runAnalysisForCustomer(Employee employee, String customerId, List<WxChatMessage> messages, String reportType) {
         log.info("Run [{}] report for employee [{}] and customer [{}]", reportType, employee.getQwId(), customerId);
         var reportAgentId = switch (reportType) {
@@ -47,14 +55,23 @@ public class TypedReportAnalyser {
         };
         if (Strings.isNotEmpty(reportAgentId)) {
             var messagesPrompt = messagesPrompt(employee, messages);
-            log.info("Call agent {} with prompt: {}", reportAgentId, messagesPrompt.substring(0, 50)+"...");
-            var response = coze.chat(reportAgentId, messagesPrompt);
+            var previewLen = Math.min(50, messagesPrompt.length());
+            log.info("Call agent {} with prompt: {}", reportAgentId, messagesPrompt.substring(0, previewLen) + "...");
+            var response = doAnalysis(reportAgentId, messagesPrompt);
             log.debug("Agent response: {}", response);
             return parseResponse(response, reportType);
         } else {
             log.info("No agent id for report type: {}", reportType);
             return null;
         }
+    }
+
+    private String doAnalysis(String reportAgentId, String messagesPrompt) {
+        if (mockProperties != null && mockProperties.isMockEnabled()) {
+            log.debug("TypedReportAnalyser mock enabled, skip real api call. agentId={}", reportAgentId);
+            return mockResponseProvider.getMockResponse();
+        }
+        return coze.chat(reportAgentId, messagesPrompt);
     }
 
     public EvaluationDetail parseResponse(String response, String reportType) {

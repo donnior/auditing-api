@@ -78,7 +78,7 @@ public class DailyChatAnalysisServiceV2 extends AbstractChatAnalysisService {
         var customers = getCustomersByEmployeeAndTimeRange(employee, fromTime, toTime);
 
         for (var customer : customers) {
-            var firstChatTime = customer.getStartTime();
+            var firstChatTime = customer.getStartTime().withZoneSameInstant(ZoneId.systemDefault());
             var rangeEnd = toTime.minusHours(48);
             String reportName = getReportName(firstChatTime);
             String bizDate = targetDate.toLocalDate().toString();

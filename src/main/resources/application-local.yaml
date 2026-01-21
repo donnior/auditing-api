@@ -4,6 +4,11 @@ security:
     dev-bypass: true
     dev-bypass-user: "local-dev"
 
+auditing:
+  report-analysis:
+    # 仅本地开发：跳过真实第三方 API 调用，直接返回 mock 响应
+    mock-enabled: true
+
 logging:
   level:
     com.xingcanai.csqe: DEBUG
