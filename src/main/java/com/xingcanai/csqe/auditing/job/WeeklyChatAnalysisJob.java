@@ -1,6 +1,6 @@
 package com.xingcanai.csqe.auditing.job;
 
-import com.xingcanai.csqe.auditing.service.WeeklyChatAnalysisService;
+import com.xingcanai.csqe.auditing.service.WeeklyChatAnalysisServiceV2;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -18,7 +18,7 @@ public class WeeklyChatAnalysisJob implements Job {
     private static final Logger logger = LoggerFactory.getLogger(WeeklyChatAnalysisJob.class);
 
     @Autowired
-    private WeeklyChatAnalysisService weeklyChatAnalysisService;
+    private WeeklyChatAnalysisServiceV2 weeklyChatAnalysisService;
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {

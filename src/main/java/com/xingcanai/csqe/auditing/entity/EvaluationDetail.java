@@ -92,6 +92,7 @@ public class EvaluationDetail {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "customer_id", referencedColumnName = "external_userid", insertable = false, updatable = false)
+    @JoinColumn(name = "employee_qw_id", referencedColumnName = "employee_qwid", insertable = false, updatable = false)
     private WxCardUser cardUser;
 
 }

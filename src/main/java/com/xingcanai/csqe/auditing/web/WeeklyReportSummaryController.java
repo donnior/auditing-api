@@ -52,7 +52,7 @@ public class WeeklyReportSummaryController {
 
     @GetMapping("/{id}")
     public WeeklyReportSummary getWeeklyReportSummary(@PathVariable String id) {
-        return weeklyReportSummaryRepository.findById(id).orElseThrow(() -> new RuntimeException("Weekly report summary not found"));
+        return weeklyReportSummaryRepository.findById(id).orElse(null);
     }
 
     /**

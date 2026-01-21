@@ -1,8 +1,9 @@
 package com.xingcanai.csqe.auditing.web;
 
-import com.xingcanai.csqe.auditing.service.WeeklyChatAnalysisService;
+import com.xingcanai.csqe.auditing.service.WeeklyChatAnalysisServiceV2;
 import com.xingcanai.csqe.util.Strings;
-import com.xingcanai.csqe.auditing.service.DailyChatAnalysisService;
+import com.xingcanai.csqe.auditing.service.DailyChatAnalysisServiceV2;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,10 +15,10 @@ import org.springframework.web.bind.annotation.*;
 public class ReportJobTestController {
 
     @Autowired
-    private WeeklyChatAnalysisService weeklyChatAnalysisService;
+    private WeeklyChatAnalysisServiceV2 weeklyChatAnalysisService;
 
     @Autowired
-    private DailyChatAnalysisService dailyChatAnalysisService;
+    private DailyChatAnalysisServiceV2 dailyChatAnalysisService;
 
     /**
      * 员工列表（默认按id倒序）

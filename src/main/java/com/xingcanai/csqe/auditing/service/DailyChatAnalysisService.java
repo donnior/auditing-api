@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.xingcanai.csqe.auditing.entity.Employee;
+import com.xingcanai.csqe.auditing.entity.WxCardUser;
 import com.xingcanai.csqe.auditing.entity.WxChatMessage;
 import com.xingcanai.csqe.auditing.entity.WxChatMessageRepository;
 
@@ -84,8 +85,10 @@ public class DailyChatAnalysisService extends AbstractChatAnalysisService {
             String bizDate = toTime.minusDays(1).toLocalDate().toString();
 
             if(firstChatTime.isAfter(fromTime) && firstChatTime.isBefore(rangeEnd)) {
+                WxCardUser customerUser = new WxCardUser();
+                customerUser.setExternalUserid(customer);
                 CompletableFuture.runAsync(
-                    () -> runCustomerAnalysisWithType(employee, customer, fromTime, firstChatTime.plusHours(48), TypedReportAnalyser.ReportTypeForWithin48Hours,reportName, bizDate),
+                    () -> runCustomerAnalysisWithType(employee, customerUser, fromTime, firstChatTime.plusHours(48), TypedReportAnalyser.ReportTypeForWithin48Hours,reportName, bizDate),
                     executorService
                 ).exceptionally(ex -> {
                             logger.error("Error running customer analysis for employee {} and customer {}", employee.getQwId(), customer, ex);

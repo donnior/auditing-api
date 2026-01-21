@@ -14,13 +14,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.xingcanai.csqe.auditing.entity.Employee;
+import com.xingcanai.csqe.auditing.entity.WxCardUser;
 import com.xingcanai.csqe.auditing.entity.WxChatMessage;
 import com.xingcanai.csqe.auditing.entity.WxChatMessageRepository;
 
 /**
  * 聊天分析服务
  */
-@Service
+// @Service
 public class WeeklyChatAnalysisService extends AbstractChatAnalysisService {
 
     private static final Logger logger = LoggerFactory.getLogger(WeeklyChatAnalysisService.class);
@@ -65,7 +66,9 @@ public class WeeklyChatAnalysisService extends AbstractChatAnalysisService {
         for (var customer : customers) {
             var reportType = getReportTypeForCustomer(employee, customer, targetSunday);
             if (isReportTypeSupported(reportType)) {
-                executorService.submit(() -> runCustomerAnalysisWithType(employee, customer, fromTime, toTime, reportType, reportPeriod, bizDate));
+                WxCardUser customerUser = new WxCardUser();
+                customerUser.setExternalUserid(customer);
+                executorService.submit(() -> runCustomerAnalysisWithType(employee, customerUser, fromTime, toTime, reportType, reportPeriod, bizDate));
             }
         }
     }

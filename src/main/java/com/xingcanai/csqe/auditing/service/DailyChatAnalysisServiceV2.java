@@ -24,7 +24,7 @@ import com.xingcanai.csqe.auditing.entity.WxCardUserRepository;
 @Service
 public class DailyChatAnalysisServiceV2 extends AbstractChatAnalysisService {
 
-    private static final Logger logger = LoggerFactory.getLogger(DailyChatAnalysisService.class);
+    private static final Logger logger = LoggerFactory.getLogger(DailyChatAnalysisServiceV2.class);
 
     private static final ExecutorService executorService = Executors.newFixedThreadPool(8);
 

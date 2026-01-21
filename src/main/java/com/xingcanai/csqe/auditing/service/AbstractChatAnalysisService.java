@@ -69,10 +69,11 @@ public abstract class AbstractChatAnalysisService {
     }
 
     protected List<WxChatMessage> getMessages(Employee employee, String customerId, ZonedDateTime fromTime, ZonedDateTime endTime) {
+        logger.debug("getMessages from {} to {} for employee {} and customer {}", fromTime, endTime, employee.getQwId(), customerId);
         long start = System.currentTimeMillis();
         var messages = wxChatMessageRepository.findChatBetweenEmployeeAndCustomer(employee.getQwId(), customerId, fromTime, endTime);
         long end = System.currentTimeMillis();
-        System.out.println("getMessages time: " + (end - start));
+        // System.out.println("getMessages time: " + (end - start));
         return messages;
     }
 

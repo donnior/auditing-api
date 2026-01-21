@@ -39,6 +39,8 @@ spring:
 logging:
   pattern:
     console: "%clr(%d{MM-dd HH:mm:ss}){yellow} %clr(%-5level) [%thread] %clr(%logger{36}){blue} - %msg%n"
+  level:
+    com.xingcanai.csqe.auditing: DEBUG
 
 llm:
   provider:

@@ -20,7 +20,13 @@ import java.time.ZonedDateTime;
 @AllArgsConstructor
 public class WxCardUser {
 
+    /**
+     * 组合主键：由 employeeQwid + externalUserid 拼接得到（落库字段：id）
+     */
     @Id
+    @Column(name = "id")
+    private String id;
+
     @Column(name = "external_userid")
     private String externalUserid;
 
