@@ -4,11 +4,11 @@ import com.xingcanai.csqe.auditing.entity.WxCardUser;
 import com.xingcanai.csqe.auditing.entity.WxCardUserRepository;
 import com.xingcanai.csqe.auditing.external.ChatDataApiClient;
 import com.xingcanai.csqe.auditing.external.ChatUserResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -30,8 +30,7 @@ public class ChatUserSyncService {
     private WxCardUserRepository wxCardUserRepository;
 
     @Autowired
-    @org.springframework.context.annotation.Lazy
-    private ChatUserSyncService self;
+    private ChatUserSavingService chatUserSavingService;
 
     /**
      * 按更新时间范围同步学员数据
@@ -64,7 +63,7 @@ public class ChatUserSyncService {
                 }
 
                 List<WxCardUser> entities = convertToEntities(items);
-                int saved = self.saveChatUsers(entities);
+                int saved = chatUserSavingService.saveChatUsers(entities);
                 totalSaved += saved;
 
                 logger.info("Synced chat users page {}, {} items, saved {}", page, items.size(), saved);
@@ -135,22 +134,5 @@ public class ChatUserSyncService {
         }
 
         return entities;
-    }
-
-    /**
-     * 批量保存学员数据（upsert 语义：主键相同则更新）
-     */
-    @Transactional
-    public int saveChatUsers(List<WxCardUser> users) {
-        int savedCount = 0;
-        for (WxCardUser user : users) {
-            try {
-                wxCardUserRepository.save(user);
-                savedCount++;
-            } catch (Exception e) {
-                logger.warn("Failed to save chat user {}: {}", user.getExternalUserid(), e.getMessage());
-            }
-        }
-        return savedCount;
     }
 }

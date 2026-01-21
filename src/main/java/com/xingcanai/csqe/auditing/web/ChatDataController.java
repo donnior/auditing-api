@@ -1,6 +1,6 @@
 package com.xingcanai.csqe.auditing.web;
 
-import com.xingcanai.csqe.auditing.service.ChatDataSyncService;
+import com.xingcanai.csqe.auditing.service.ChatMessageSyncService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +17,7 @@ import java.util.Map;
 public class ChatDataController {
 
     @Autowired
-    private ChatDataSyncService chatDataSyncService;
+    private ChatMessageSyncService chatMessageSyncService;
 
     /**
      * 手动触发聊天数据同步
@@ -32,11 +32,11 @@ public class ChatDataController {
         try {
             if (startTime != null && endTime != null) {
                 // 按时间范围同步
-                chatDataSyncService.syncChatDataByTimeRange(startTime, endTime);
+                chatMessageSyncService.syncChatDataByTimeRange(startTime, endTime);
                 result.put("message", "按时间范围同步聊天数据成功");
             } else {
                 // 增量同步
-                chatDataSyncService.incrementalSyncChatData();
+                chatMessageSyncService.incrementalSyncChatData();
                 result.put("message", "增量同步聊天数据成功");
             }
             result.put("success", true);

@@ -32,21 +32,28 @@ public class WeeklyChatAnalysisServiceV2 extends AbstractChatAnalysisService {
 
     @Override
     public void runAnalysis() {
-        logger.info("runWeeklyAnalysis");
-        doRunAnalysis(ZonedDateTime.now());
+        var now = ZonedDateTime.now();
+        logger.info("Running weekly analysis at current time: {}", now);
+        doRunAnalysis(now);
     }
 
     // 2026-01-05
     @Override
     public void runAnalysis(String targetDate) {
-        doRunAnalysis(LocalDate.parse(targetDate).atStartOfDay(ZoneId.systemDefault()));
+        var target = LocalDate.parse(targetDate).atStartOfDay(ZoneId.systemDefault());
+        logger.info("Running weekly analysis at simulated time: {}", target);
+        doRunAnalysis(target);
     }
 
-    private void doRunAnalysis(ZonedDateTime time) {
-        var lastSunday = time.with(DayOfWeek.SUNDAY).minusWeeks(1);
+    /**
+     * 指定时间的上一个周末（周天）作为分析目标
+     * @param time
+     */
+    private void doRunAnalysis(ZonedDateTime simulatedRunningTime) {
+        var targetWeekend = simulatedRunningTime.with(DayOfWeek.SUNDAY).minusWeeks(1);
         var employees = getActiveEmployees();
         for (var employee : employees) {
-            runWeeklyAnalysisForEmployee(employee, lastSunday);
+            runWeeklyAnalysisForEmployee(employee, targetWeekend);
         }
     }
 
@@ -54,24 +61,28 @@ public class WeeklyChatAnalysisServiceV2 extends AbstractChatAnalysisService {
         var reportPeriod = targetSunday.toLocalDate().toString();
         var bizDate = reportPeriod;
 
-        var targetSundayEndTime = targetSunday.withHour(0).withMinute(0).withSecond(0).withNano(0);
+        var targetSundayEndTime = DateTimeUtils.asEndOfDay(targetSunday);
 
-        ZonedDateTime fromTime = targetSunday.minusDays(30).withHour(0).withMinute(0).withSecond(0);
-        // ZonedDateTime toTime = toMonday.withHour(0).withMinute(0).withSecond(0);
-        ZonedDateTime toTime = targetSunday.minusDays(2).withHour(0).withMinute(0).withSecond(9);
-
-        var customers = getCustomersByEmployeeAndTimeRange(employee, fromTime, toTime);
+        var customers = getLatest4WeeksCustomers(employee, targetSundayEndTime);
 
         for (var customer : customers) {
             var reportType = getReportTypeForCustomer(employee, customer, targetSunday);
             if (isReportTypeSupported(reportType)) {
-                ZonedDateTime chatRangeStart = getChatRangeStart(customer, targetSundayEndTime, reportType);
+                ZonedDateTime chatRangeStart = getChatTimeRangeStart(customer, targetSundayEndTime, reportType);
                 executorService.submit(() -> runCustomerAnalysisWithType(employee, customer, chatRangeStart, targetSundayEndTime, reportType, reportPeriod, bizDate));
             }
         }
     }
 
-    private ZonedDateTime getChatRangeStart(WxCardUser customer, ZonedDateTime targetSundayEndTime, String reportType) {
+
+    private List<WxCardUser> getLatest4WeeksCustomers(Employee employee, ZonedDateTime targetSunday) {
+        ZonedDateTime fromTime = DateTimeUtils.asStartOfDay(targetSunday.minusDays(30));
+        ZonedDateTime toTime = DateTimeUtils.asStartOfDay(targetSunday.minusDays(2));
+
+        return wxCardUserRepository.findByEmployeeQwidAndTimeRange(employee.getQwId(), fromTime, toTime);
+    }
+
+    private ZonedDateTime getChatTimeRangeStart(WxCardUser customer, ZonedDateTime targetSundayEndTime, String reportType) {
         ZonedDateTime chatRangeStart = customer.getStartTime().minusMinutes(1);
         if (reportType != TypedReportAnalyser.ReportTypeForFirstWeek) {
             chatRangeStart = targetSundayEndTime.minusDays(7);
@@ -79,15 +90,11 @@ public class WeeklyChatAnalysisServiceV2 extends AbstractChatAnalysisService {
         return chatRangeStart;
     }
 
-    private List<WxCardUser> getCustomersByEmployeeAndTimeRange(Employee employee, ZonedDateTime fromTime, ZonedDateTime toTime) {
-        return wxCardUserRepository.findByEmployeeQwidAndTimeRange(employee.getQwId(), fromTime, toTime);
-    }
 
     private String getReportTypeForCustomer(Employee employee, WxCardUser customer, ZonedDateTime targetSunday) {
-        // 获取员工和客户之间最早的一条聊天记录
         ZonedDateTime firstChatTime = customer.getStartTime();
         logger.debug("First chat time between employee {} and customer {}: {}", employee.getQwId(), customer.getExternalUserid(), firstChatTime);
-        int weekNumber =  WeeklyChatReportTypeCalculator.calculateReportType(firstChatTime, targetSunday);
+        int weekNumber =  WeekNumberCalculator.calculateReportType(firstChatTime, targetSunday);
 
         return switch (weekNumber) {
             case 1 -> TypedReportAnalyser.ReportTypeForFirstWeek;

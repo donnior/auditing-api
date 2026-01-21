@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -20,9 +19,9 @@ import java.util.List;
  * 聊天数据同步服务
  */
 @Service
-public class ChatDataSyncService {
+public class ChatMessageSyncService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ChatDataSyncService.class);
+    private static final Logger logger = LoggerFactory.getLogger(ChatMessageSyncService.class);
 
     @Autowired
     private ChatDataApiClient chatDataApiClient;
@@ -31,8 +30,7 @@ public class ChatDataSyncService {
     private WxChatMessageRepository wxCpChatMsgRepository;
 
     @Autowired
-    @org.springframework.context.annotation.Lazy
-    private ChatDataSyncService self;
+    private ChatMessageSavingService chatMessageSavingService;
 
     /**
      * 同步指定时间范围的聊天数据
@@ -66,8 +64,7 @@ public class ChatDataSyncService {
                 }
 
                 List<WxChatMessage> entities = convertToEntities(items);
-                // Use self to ensure @Transactional works
-                int saved = self.saveChatMessages(entities);
+                int saved = chatMessageSavingService.saveChatMessages(entities);
                 totalSynced += saved;
 
                 logger.info("Synced page {}, {} items, saved {} new messages", page, items.size(), saved);
@@ -137,23 +134,5 @@ public class ChatDataSyncService {
         return entities;
     }
 
-    /**
-     * 批量保存聊天消息，忽略重复记录
-     */
-    @Transactional
-    public int saveChatMessages(List<WxChatMessage> chatMessages) {
-        int savedCount = 0;
 
-        for (WxChatMessage message : chatMessages) {
-            try {
-                // 直接使用JPA save，如果存在则更新
-                wxCpChatMsgRepository.save(message);
-                savedCount++;
-            } catch (Exception e) {
-                logger.warn("Failed to save chat message {}: {}", message.getMsgId(), e.getMessage());
-            }
-        }
-
-        return savedCount;
-    }
 }

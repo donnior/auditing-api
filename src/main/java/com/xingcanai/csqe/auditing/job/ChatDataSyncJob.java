@@ -1,6 +1,6 @@
 package com.xingcanai.csqe.auditing.job;
 
-import com.xingcanai.csqe.auditing.service.ChatDataSyncService;
+import com.xingcanai.csqe.auditing.service.ChatMessageSyncService;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -19,7 +19,7 @@ public class ChatDataSyncJob implements Job {
     private static final Logger logger = LoggerFactory.getLogger(ChatDataSyncJob.class);
 
     @Autowired
-    private ChatDataSyncService chatDataSyncService;
+    private ChatMessageSyncService chatDataSyncService;
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {

@@ -44,7 +44,7 @@ public abstract class AbstractChatAnalysisService {
 
 
     protected void runCustomerAnalysisWithType(Employee employee, WxCardUser customer, ZonedDateTime fromTime, ZonedDateTime toTime, String reportType, String reportPeriod, String bizDate) {
-        var messages = getMessages(employee, customer.getExternalUserid(), fromTime, toTime);
+        var messages = getMessages(employee, customer.getExternalUserid(), TimeRange.with(fromTime, toTime));
         var evaluationDetail = typedReportAnalyser.runAnalysisForCustomer(employee, customer.getExternalUserid(), messages, reportType);
         if (evaluationDetail != null) {
             evaluationDetail.setEmployeeId(employee.getId());
@@ -68,13 +68,12 @@ public abstract class AbstractChatAnalysisService {
         }
     }
 
-    protected List<WxChatMessage> getMessages(Employee employee, String customerId, ZonedDateTime fromTime, ZonedDateTime endTime) {
-        logger.debug("getMessages from {} to {} for employee {} and customer {}", fromTime, endTime, employee.getQwId(), customerId);
-        long start = System.currentTimeMillis();
-        var messages = wxChatMessageRepository.findChatBetweenEmployeeAndCustomer(employee.getQwId(), customerId, fromTime, endTime);
-        long end = System.currentTimeMillis();
-        // System.out.println("getMessages time: " + (end - start));
-        return messages;
+    protected List<WxChatMessage> getMessages(Employee employee, String customerId, TimeRange timeRange) {
+        ZonedDateTime fromTime = timeRange.start();
+        ZonedDateTime endTime = timeRange.end();
+
+        logger.debug("getMessages from {} for employee {} and customer {}", timeRange, employee.getQwId(), customerId);
+        return wxChatMessageRepository.findChatBetweenEmployeeAndCustomer(employee.getQwId(), customerId, fromTime, endTime);
     }
 
     protected boolean isReportTypeSupported(String reportType) {

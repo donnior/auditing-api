@@ -32,12 +32,12 @@ public class DailyChatAnalysisServiceV2 extends AbstractChatAnalysisService {
     private WxCardUserRepository wxCardUserRepository;
 
     public void runAnalysis() {
-        var now = ZonedDateTime.now();
+        var now = ZonedDateTime.now().withZoneSameInstant(ZoneId.systemDefault());
         /**
          * 以当前时间的0点为基准运行分析，跑前一天的数据
          */
-        var targetDate = now.withHour(0).withMinute(0).withSecond(0).withNano(0);
-        doRunAnalysis(targetDate);
+        logger.info("Running daily analysis at current time: {}", now);
+        doRunAnalysis(now);
         // runAnalysis("2026-01-01");
     }
 
@@ -46,13 +46,15 @@ public class DailyChatAnalysisServiceV2 extends AbstractChatAnalysisService {
      */
     public void runAnalysis(String targetDate) {
         var target = LocalDate.parse(targetDate).atStartOfDay(ZoneId.systemDefault());
+        logger.info("Running daily analysis at simulated time: {}", target);
         doRunAnalysis(target);
     }
 
-    private void doRunAnalysis(ZonedDateTime time) {
+    private void doRunAnalysis(ZonedDateTime simulatedRunningTime) {
+        var targetDate = simulatedRunningTime.minusDays(1);
         var employees = getActiveEmployees();
         for (var employee : employees) {
-            runWeeklyAnalysisForEmployee(employee, time);
+            runAnalysisForEmployee(employee, targetDate);
         }
     }
 
@@ -68,9 +70,9 @@ public class DailyChatAnalysisServiceV2 extends AbstractChatAnalysisService {
         return wxCardUserRepository.findByEmployeeQwidAndTimeRange(employee.getQwId(), fromTime, toTime);
     }
 
-    private void runWeeklyAnalysisForEmployee(Employee employee, ZonedDateTime time) {
+    private void runAnalysisForEmployee(Employee employee, ZonedDateTime targetDate) {
 
-        var toTime = time;
+        var toTime = DateTimeUtils.asEndOfDay(targetDate);
         var fromTime = toTime.minusHours(72);
 
         var customers = getCustomersByEmployeeAndTimeRange(employee, fromTime, toTime);
@@ -79,7 +81,7 @@ public class DailyChatAnalysisServiceV2 extends AbstractChatAnalysisService {
             var firstChatTime = customer.getStartTime();
             var rangeEnd = toTime.minusHours(48);
             String reportName = getReportName(firstChatTime);
-            String bizDate = toTime.minusDays(1).toLocalDate().toString();
+            String bizDate = targetDate.toLocalDate().toString();
 
             if(firstChatTime.isAfter(fromTime) && firstChatTime.isBefore(rangeEnd)) {
                 CompletableFuture.runAsync(
