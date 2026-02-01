@@ -32,4 +32,10 @@ public class Employee {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
+    /**
+     * 所属分组ID
+     */
+    @Column(name = "group_id")
+    private String groupId;
+
 }
