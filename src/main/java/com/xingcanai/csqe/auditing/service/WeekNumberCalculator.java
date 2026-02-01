@@ -18,21 +18,15 @@ public final class WeekNumberCalculator {
     }
 
     public static int calculateReportType(ZonedDateTime firstChatTime, ZonedDateTime targetSunday) {
-        // 找到第一条聊天记录所在周的周四结束时间（周四23:59:59）
-        ZonedDateTime thursdayEnd = DateTimeUtils.asEndOfDay(firstChatTime.with(DayOfWeek.THURSDAY));
+        // 找到第一条聊天记录所在周的周五结束时间（周五23:59:59）
+        ZonedDateTime fridayEnd = DateTimeUtils.asEndOfDay(firstChatTime.with(DayOfWeek.FRIDAY));
 
         // 确定第一周周日：with(DayOfWeek.SUNDAY) 会找到本周的周日（如果当前是周日则返回当前日期，否则向后找到周日）
         ZonedDateTime firstWeekSunday = firstChatTime.with(DayOfWeek.SUNDAY);
 
-        if (firstChatTime.isAfter(thursdayEnd)) {
+        if (firstChatTime.isAfter(fridayEnd)) {
             firstWeekSunday = firstWeekSunday.plusWeeks(1);
         }
-
-
-        // // 如果第一条聊天记录在周四之后（周五、周六），需要向后找到下一周的周四
-        // if (firstChatTime.getDayOfWeek().getValue() > DayOfWeek.THURSDAY.getValue()) {
-        //     thursdayEnd = thursdayEnd.plusWeeks(1);
-        // }
 
         // 计算目标周日相对于第一周周日是第几周
         long weeksBetween = java.time.temporal.ChronoUnit.WEEKS.between(
@@ -65,6 +59,7 @@ public final class WeekNumberCalculator {
             "2026-01-14T13:59:59+08:00",
             "2026-01-15T13:59:59+08:00",
             "2026-01-16T13:59:59+08:00",
+            "2026-01-17T13:59:59+08:00",
             "2026-02-17T13:59:59+08:00",
             "2026-02-18T13:59:59+08:00",
         };

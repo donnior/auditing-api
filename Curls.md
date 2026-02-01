@@ -31,6 +31,17 @@ curl -X POST \
   }'
 ```
 
+curl -X POST \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc2ODgxMDY4NiwiZXhwIjoxNzY5NDE1NDg2fQ.eWtssGFzrP37WLXlk4Umg1hGM2aDAD4DOv71ddhID0M" \
+"https://zj.xingcanai.com/auditing-api/chat-user/sync?startTime=2025-12-15T23:59:58%2B08:00&endTime=2026-01-22T23:59:59%2B08:00"
+
+
 curl 'https://zj.xingcanai.com/auditing-api/report-job-test/daily?target_date=2026-01-11' \
+  -H 'Accept: application/json, text/plain, */*' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc2ODgxMDY4NiwiZXhwIjoxNzY5NDE1NDg2fQ.eWtssGFzrP37WLXlk4Umg1hGM2aDAD4DOv71ddhID0M'
+
+
+curl 'https://zj.xingcanai.com/auditing-api/report-job-test' \
   -H 'Accept: application/json, text/plain, */*' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc2ODgxMDY4NiwiZXhwIjoxNzY5NDE1NDg2fQ.eWtssGFzrP37WLXlk4Umg1hGM2aDAD4DOv71ddhID0M'

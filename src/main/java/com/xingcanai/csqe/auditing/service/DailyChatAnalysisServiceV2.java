@@ -60,7 +60,7 @@ public class DailyChatAnalysisServiceV2 extends AbstractChatAnalysisService {
 
     private String getReportName(ZonedDateTime firstChatTime) {
         String reportName = firstChatTime.with(DayOfWeek.SUNDAY).toLocalDate().toString();
-        if (firstChatTime.getDayOfWeek().getValue() > DayOfWeek.THURSDAY.getValue()) {
+        if (firstChatTime.getDayOfWeek().getValue() > DayOfWeek.FRIDAY.getValue()) {
             reportName = firstChatTime.with(DayOfWeek.SUNDAY).plusWeeks(1).toLocalDate().toString();
         }
         return reportName;
