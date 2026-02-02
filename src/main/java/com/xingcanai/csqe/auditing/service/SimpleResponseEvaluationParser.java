@@ -33,6 +33,16 @@ public class SimpleResponseEvaluationParser {
                 .orElse(false);
     }
 
+    private String asString(String kw,List<String> lines) {
+        return lines.stream()
+                .filter(line -> line.contains(kw))
+                .findFirst()
+                .map(line -> line.split(kw))
+                .map(parts -> parts.length > 1 ? parts[1] : "")
+                .map(text -> text.trim())
+                .orElse("");
+    }
+
     public EvaluationDetail parseResponse(String response, String reportType) {
         if (Strings.isEmpty(response)) {
             return null;
@@ -47,7 +57,8 @@ public class SimpleResponseEvaluationParser {
             "下周资料发送", (e, kw) -> e.setHasWeekMaterialSend(asBoolean(kw, lines) ? 1 : 0),
             "完成课后学习感受追踪", (e, kw) -> e.setHasFeedbackTrack(asBoolean(kw, lines) ? 1 : 0),
             "周日螳螂销转链接", (e, kw) -> e.setHasSundayLinkSend(asBoolean(kw, lines) ? 1 : 0),
-            "风险词触发", (e, kw) -> e.setHasRiskWordTrigger(asBoolean(kw, lines) ? 1 : 0)
+            "风险词触发", (e, kw) -> e.setHasRiskWordTrigger(asBoolean(kw, lines) ? 1 : 0),
+            "风险词", (e, kw) -> e.setRiskWords(asString(kw+"：", lines))
         );
 
         Map<String, DetailSetting> part2 = Map.of(

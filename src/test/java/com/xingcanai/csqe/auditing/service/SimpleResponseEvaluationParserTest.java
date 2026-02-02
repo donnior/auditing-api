@@ -230,4 +230,77 @@ class SimpleResponseEvaluationParserTest {
         assertEquals(0, result.getHasSundayLinkSend());
         assertEquals(0, result.getHasRiskWordTrigger());
     }
+
+    @Test
+    void testParseResponse_withRiskWords() {
+        // 准备测试数据 - 包含风险词
+        String response = """
+                完成资料发送：是
+                完成到课提醒：是
+                风险词触发：是
+                风险词：退款,垃圾,不满意
+                下周资料发送：否
+                """;
+
+        // 执行测试
+        EvaluationDetail result = parser.parseResponse(response, "FIRST_WEEK");
+
+        // 验证结果
+        assertNotNull(result);
+        assertEquals(1, result.getHasRiskWordTrigger());
+        assertEquals("退款,垃圾,不满意", result.getRiskWords());
+    }
+
+    @Test
+    void testParseResponse_withoutRiskWords() {
+        // 准备测试数据 - 不包含风险词行
+        String response = """
+                完成资料发送：是
+                完成到课提醒：是
+                风险词触发：否
+                """;
+
+        // 执行测试
+        EvaluationDetail result = parser.parseResponse(response, "FIRST_WEEK");
+
+        // 验证结果
+        assertNotNull(result);
+        assertEquals(0, result.getHasRiskWordTrigger());
+        assertEquals("", result.getRiskWords());
+    }
+
+    @Test
+    void testParseResponse_emptyRiskWords() {
+        // 准备测试数据 - 风险词为空
+        String response = """
+                完成资料发送：是
+                风险词触发：是
+                风险词：
+                """;
+
+        // 执行测试
+        EvaluationDetail result = parser.parseResponse(response, "FIRST_WEEK");
+
+        // 验证结果
+        assertNotNull(result);
+        assertEquals(1, result.getHasRiskWordTrigger());
+        assertEquals("", result.getRiskWords());
+    }
+
+    @Test
+    void testParseResponse_riskWordsWithSpaces() {
+        // 准备测试数据 - 风险词前后有空格
+        String response = """
+                风险词触发：是
+                风险词：  退款 , 垃圾  , 不满意
+                """;
+
+        // 执行测试
+        EvaluationDetail result = parser.parseResponse(response, "FIRST_WEEK");
+
+        // 验证结果 - 整个字符串会被 trim，但内部空格保留
+        assertNotNull(result);
+        assertEquals(1, result.getHasRiskWordTrigger());
+        assertEquals("退款 , 垃圾  , 不满意", result.getRiskWords());
+    }
 }

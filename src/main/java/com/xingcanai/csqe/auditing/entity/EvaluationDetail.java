@@ -81,6 +81,9 @@ public class EvaluationDetail {
     @Column(name = "has_risk_word_trigger")
     private int hasRiskWordTrigger;   //是否有触发风险词
 
+    @Column(name = "risk_words")
+    private String riskWords = "";   //风险词列表（原始字符串）
+
     @Column(name = "chat_start_time")
     private ZonedDateTime chatStartTime;   //聊天开始时间
 
