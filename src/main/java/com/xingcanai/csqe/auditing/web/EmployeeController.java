@@ -167,6 +167,74 @@ public class EmployeeController {
     }
 
     /**
+     * 获取组长管理的员工列表
+     * 根据登录用户名，查找该用户关联的员工，再查找该员工作为组长的所有分组，返回这些分组内的所有员工
+     */
+    @GetMapping("/managed-by-leader")
+    public List<EmployeeVO> getManagedByLeader(@RequestParam String username) {
+        // 1. 根据用户名找到账户
+        AccountUser account = accountUserRepository.findByUsernameAndIsDeletedFalse(username)
+                .orElse(null);
+        if (account == null) {
+            return List.of();
+        }
+
+        // 2. 找到关联该账户的员工
+        Employee leaderEmployee = employeeRepository.findAll().stream()
+                .filter(e -> !Boolean.TRUE.equals(e.getIsDeleted()) 
+                        && account.getId().equals(e.getAccountUserId()))
+                .findFirst()
+                .orElse(null);
+        if (leaderEmployee == null) {
+            return List.of();
+        }
+
+        // 3. 找到该员工作为组长的所有分组
+        List<EmployeeGroup> leadingGroups = employeeGroupRepository.findByIsDeletedFalseOrderByCreatedAtDesc()
+                .stream()
+                .filter(g -> leaderEmployee.getId().equals(g.getLeaderId()))
+                .collect(Collectors.toList());
+        if (leadingGroups.isEmpty()) {
+            return List.of();
+        }
+
+        // 4. 获取这些分组的所有成员
+        List<String> groupIds = leadingGroups.stream()
+                .map(EmployeeGroup::getId)
+                .collect(Collectors.toList());
+
+        // 获取分组名称映射
+        Map<String, String> groupNameMap = leadingGroups.stream()
+                .collect(Collectors.toMap(EmployeeGroup::getId, EmployeeGroup::getName, (a, b) -> a));
+
+        // 获取账户名映射
+        Map<String, String> accountUsernameMap = accountUserRepository.findAll()
+                .stream()
+                .filter(a -> !Boolean.TRUE.equals(a.getIsDeleted()))
+                .collect(Collectors.toMap(AccountUser::getId, AccountUser::getUsername, (a, b) -> a));
+
+        // 返回分组内的所有员工
+        return employeeRepository.findAll().stream()
+                .filter(e -> !Boolean.TRUE.equals(e.getIsDeleted()) 
+                        && e.getGroupId() != null 
+                        && groupIds.contains(e.getGroupId()))
+                .map(employee -> {
+                    EmployeeVO vo = new EmployeeVO();
+                    vo.setId(employee.getId());
+                    vo.setQwId(employee.getQwId());
+                    vo.setName(employee.getName());
+                    vo.setStatus(employee.getStatus());
+                    vo.setIsDeleted(employee.getIsDeleted());
+                    vo.setGroupId(employee.getGroupId());
+                    vo.setGroupName(groupNameMap.get(employee.getGroupId()));
+                    vo.setAccountUserId(employee.getAccountUserId());
+                    vo.setAccountUsername(employee.getAccountUserId() != null ? accountUsernameMap.get(employee.getAccountUserId()) : null);
+                    return vo;
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
      * 获取可分配的账户列表（未被其他员工关联的账户）
      */
     @GetMapping("/available-accounts")
