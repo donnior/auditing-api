@@ -17,6 +17,15 @@ public class AccountUser {
     public static final Integer STATUS_ACTIVE = 1;
     public static final Integer STATUS_INACTIVE = 0;
 
+    /**
+     * 账户类型：管理员
+     */
+    public static final Integer ACCOUNT_TYPE_ADMIN = 1;
+    /**
+     * 账户类型：普通员工
+     */
+    public static final Integer ACCOUNT_TYPE_EMPLOYEE = 2;
+
     @Id
     @Column(name = "id")
     private String id = UlidCreator.getUlid().toLowerCase();
@@ -38,4 +47,10 @@ public class AccountUser {
 
     @Column(name = "update_time")
     private ZonedDateTime updateTime = ZonedDateTime.now();
+
+    /**
+     * 账户类型: 1=管理员, 2=普通员工
+     */
+    @Column(name = "account_type")
+    private Integer accountType = ACCOUNT_TYPE_EMPLOYEE;
 }

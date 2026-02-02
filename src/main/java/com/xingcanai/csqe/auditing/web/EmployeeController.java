@@ -4,6 +4,8 @@ import com.xingcanai.csqe.auditing.entity.Employee;
 import com.xingcanai.csqe.auditing.entity.EmployeeGroup;
 import com.xingcanai.csqe.auditing.entity.EmployeeGroupRepository;
 import com.xingcanai.csqe.auditing.entity.EmployeeRepository;
+import com.xingcanai.csqe.auth.entity.AccountUser;
+import com.xingcanai.csqe.auth.entity.AccountUserRepository;
 import com.xingcanai.csqe.common.XCPageRequest;
 import com.github.f4b6a3.ulid.UlidCreator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,9 @@ public class EmployeeController {
     @Autowired
     private EmployeeGroupRepository employeeGroupRepository;
 
+    @Autowired
+    private AccountUserRepository accountUserRepository;
+
     /**
      * 员工列表（默认按id倒序，包含分组信息）
      */
@@ -42,6 +47,12 @@ public class EmployeeController {
                 .stream()
                 .collect(Collectors.toMap(EmployeeGroup::getId, EmployeeGroup::getName, (a, b) -> a));
         
+        // 获取所有账户，用于映射账户名
+        Map<String, String> accountUsernameMap = accountUserRepository.findAll()
+                .stream()
+                .filter(a -> !Boolean.TRUE.equals(a.getIsDeleted()))
+                .collect(Collectors.toMap(AccountUser::getId, AccountUser::getUsername, (a, b) -> a));
+        
         // 转换为 VO
         List<EmployeeVO> voList = employeePage.getContent().stream().map(employee -> {
             EmployeeVO vo = new EmployeeVO();
@@ -52,6 +63,8 @@ public class EmployeeController {
             vo.setIsDeleted(employee.getIsDeleted());
             vo.setGroupId(employee.getGroupId());
             vo.setGroupName(employee.getGroupId() != null ? groupNameMap.get(employee.getGroupId()) : null);
+            vo.setAccountUserId(employee.getAccountUserId());
+            vo.setAccountUsername(employee.getAccountUserId() != null ? accountUsernameMap.get(employee.getAccountUserId()) : null);
             return vo;
         }).collect(Collectors.toList());
         
@@ -116,7 +129,69 @@ public class EmployeeController {
         return employeeRepository.save(employee);
     }
 
-    // 员工 VO，包含分组信息
+    /**
+     * 为员工分配登录账户
+     */
+    @PutMapping("/{id}/account/{accountUserId}")
+    public Employee assignAccount(@PathVariable String id, @PathVariable String accountUserId) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("员工不存在"));
+        if (Boolean.TRUE.equals(employee.getIsDeleted())) {
+            throw new RuntimeException("员工不存在");
+        }
+        
+        // 验证账户存在
+        AccountUser account = accountUserRepository.findById(accountUserId)
+                .orElseThrow(() -> new RuntimeException("账户不存在"));
+        if (Boolean.TRUE.equals(account.getIsDeleted())) {
+            throw new RuntimeException("账户不存在");
+        }
+        
+        employee.setAccountUserId(accountUserId);
+        return employeeRepository.save(employee);
+    }
+
+    /**
+     * 解除员工的登录账户关联
+     */
+    @DeleteMapping("/{id}/account")
+    public Employee removeAccount(@PathVariable String id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("员工不存在"));
+        if (Boolean.TRUE.equals(employee.getIsDeleted())) {
+            throw new RuntimeException("员工不存在");
+        }
+        
+        employee.setAccountUserId(null);
+        return employeeRepository.save(employee);
+    }
+
+    /**
+     * 获取可分配的账户列表（未被其他员工关联的账户）
+     */
+    @GetMapping("/available-accounts")
+    public List<AccountBriefVO> getAvailableAccounts() {
+        // 获取已被关联的账户ID
+        List<String> assignedAccountIds = employeeRepository.findAll().stream()
+                .filter(e -> !Boolean.TRUE.equals(e.getIsDeleted()) && e.getAccountUserId() != null)
+                .map(Employee::getAccountUserId)
+                .collect(Collectors.toList());
+        
+        // 返回未被关联的账户
+        return accountUserRepository.findAll().stream()
+                .filter(a -> !Boolean.TRUE.equals(a.getIsDeleted()) 
+                        && !assignedAccountIds.contains(a.getId()))
+                .map(a -> {
+                    AccountBriefVO vo = new AccountBriefVO();
+                    vo.setId(a.getId());
+                    vo.setUsername(a.getUsername());
+                    vo.setAccountType(a.getAccountType());
+                    return vo;
+                })
+                .collect(Collectors.toList());
+    }
+
+    // 员工 VO，包含分组信息和账户信息
     @lombok.Data
     public static class EmployeeVO {
         private String id;
@@ -126,5 +201,15 @@ public class EmployeeController {
         private Boolean isDeleted;
         private String groupId;
         private String groupName;
+        private String accountUserId;
+        private String accountUsername;
+    }
+
+    // 账户简要信息
+    @lombok.Data
+    public static class AccountBriefVO {
+        private String id;
+        private String username;
+        private Integer accountType;
     }
 }

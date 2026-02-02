@@ -38,4 +38,10 @@ public class Employee {
     @Column(name = "group_id")
     private String groupId;
 
+    /**
+     * 关联的登录账户ID
+     */
+    @Column(name = "account_user_id")
+    private String accountUserId;
+
 }

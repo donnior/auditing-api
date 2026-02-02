@@ -45,11 +45,12 @@ public class AuthController implements BaseController {
             return ResponseEntity.status(401).body(fail("用户名或密码错误"));
         }
 
-        String token = jwtService.issueToken(user.getUsername());
+        String token = jwtService.issueToken(user.getUsername(), user.getAccountType());
         Map<String, Object> data = Map.of(
             "token", token,
             "token_type", "Bearer",
-            "expires_in", jwtService.ttlSeconds()
+            "expires_in", jwtService.ttlSeconds(),
+            "account_type", user.getAccountType() != null ? user.getAccountType() : AccountUser.ACCOUNT_TYPE_EMPLOYEE
         );
         return ResponseEntity.ok(success(data));
     }

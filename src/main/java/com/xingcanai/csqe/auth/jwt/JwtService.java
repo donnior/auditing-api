@@ -36,23 +36,30 @@ public class JwtService {
     }
 
     public String issueToken(String username) {
+        return issueToken(username, null);
+    }
+
+    public String issueToken(String username, Integer accountType) {
         Instant now = Instant.now();
         Instant exp = now.plusSeconds(props.getTtlSeconds());
-        return Jwts.builder()
+        var builder = Jwts.builder()
             .subject(username)
             .issuedAt(Date.from(now))
-            .expiration(Date.from(exp))
-            .signWith(key)
-            .compact();
+            .expiration(Date.from(exp));
+        
+        if (accountType != null) {
+            builder.claim("account_type", accountType);
+        }
+        
+        return builder.signWith(key).compact();
     }
 
     public Optional<String> parseSubject(String token) {
         try {
-            Claims claims = Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+            Claims claims = parseClaims(token);
+            if (claims == null) {
+                return Optional.empty();
+            }
             String sub = claims.getSubject();
             if (sub == null || sub.isBlank()) {
                 return Optional.empty();
@@ -60,6 +67,31 @@ public class JwtService {
             return Optional.of(sub);
         } catch (Exception e) {
             return Optional.empty();
+        }
+    }
+
+    public Optional<Integer> parseAccountType(String token) {
+        try {
+            Claims claims = parseClaims(token);
+            if (claims == null) {
+                return Optional.empty();
+            }
+            Integer accountType = claims.get("account_type", Integer.class);
+            return Optional.ofNullable(accountType);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    private Claims parseClaims(String token) {
+        try {
+            return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        } catch (Exception e) {
+            return null;
         }
     }
 }
