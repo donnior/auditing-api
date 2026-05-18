@@ -2,7 +2,11 @@ package com.xingcanai.csqe.auditing.service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.MonthDay;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -27,6 +31,8 @@ public class DailyChatAnalysisServiceV2 extends AbstractChatAnalysisService {
     private static final Logger logger = LoggerFactory.getLogger(DailyChatAnalysisServiceV2.class);
 
     private static final ExecutorService executorService = Executors.newFixedThreadPool(8);
+    private static final DateTimeFormatter FULL_CAMP_TAG_FORMATTER = DateTimeFormatter.BASIC_ISO_DATE;
+    private static final DateTimeFormatter SHORT_CAMP_TAG_FORMATTER = DateTimeFormatter.ofPattern("MMdd");
 
     @Autowired
     private WxCardUserRepository wxCardUserRepository;
@@ -58,12 +64,43 @@ public class DailyChatAnalysisServiceV2 extends AbstractChatAnalysisService {
         }
     }
 
-    private String getReportName(ZonedDateTime firstChatTime) {
-        String reportName = firstChatTime.with(DayOfWeek.SUNDAY).toLocalDate().toString();
-        if (firstChatTime.getDayOfWeek().getValue() > DayOfWeek.FRIDAY.getValue()) {
-            reportName = firstChatTime.with(DayOfWeek.SUNDAY).plusWeeks(1).toLocalDate().toString();
+    private String getReportName(WxCardUser customer) {
+        LocalDate campDate = parseCampDate(customer.getCampTag(), customer.getStartTime().toLocalDate());
+        if (campDate != null) {
+            return campDate.toString();
         }
-        return reportName;
+
+        return customer.getStartTime()
+                .with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY))
+                .toLocalDate()
+                .toString();
+    }
+
+    private LocalDate parseCampDate(String campTag, LocalDate referenceDate) {
+        if (campTag == null || campTag.isBlank()) {
+            return null;
+        }
+
+        String value = campTag.trim();
+        try {
+            if (value.matches("\\d{8}")) {
+                return LocalDate.parse(value, FULL_CAMP_TAG_FORMATTER);
+            }
+            if (value.matches("\\d{4}")) {
+                MonthDay monthDay = MonthDay.parse(value, SHORT_CAMP_TAG_FORMATTER);
+                LocalDate date = monthDay.atYear(referenceDate.getYear());
+                if (date.isBefore(referenceDate.minusMonths(6))) {
+                    date = date.plusYears(1);
+                }
+                if (date.isAfter(referenceDate.plusMonths(6))) {
+                    date = date.minusYears(1);
+                }
+                return date;
+            }
+        } catch (DateTimeParseException e) {
+            logger.warn("Failed to parse campTag {} for daily report name: {}", campTag, e.getMessage());
+        }
+        return null;
     }
 
     private List<WxCardUser> getCustomersByEmployeeAndTimeRange(Employee employee, ZonedDateTime fromTime, ZonedDateTime toTime) {
@@ -80,7 +117,7 @@ public class DailyChatAnalysisServiceV2 extends AbstractChatAnalysisService {
         for (var customer : customers) {
             var firstChatTime = customer.getStartTime().withZoneSameInstant(ZoneId.systemDefault());
             var rangeEnd = toTime.minusHours(48);
-            String reportName = getReportName(firstChatTime);
+            String reportName = getReportName(customer);
             String bizDate = targetDate.toLocalDate().toString();
 
             if(firstChatTime.isAfter(fromTime) && firstChatTime.isBefore(rangeEnd)) {

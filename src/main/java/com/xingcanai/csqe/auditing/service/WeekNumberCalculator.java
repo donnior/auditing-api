@@ -1,7 +1,11 @@
 package com.xingcanai.csqe.auditing.service;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.MonthDay;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 
 import org.slf4j.Logger;
@@ -13,6 +17,8 @@ import org.slf4j.LoggerFactory;
 public final class WeekNumberCalculator {
 
     private static final Logger logger = LoggerFactory.getLogger(WeekNumberCalculator.class);
+    private static final DateTimeFormatter FULL_CAMP_TAG_FORMATTER = DateTimeFormatter.BASIC_ISO_DATE;
+    private static final DateTimeFormatter SHORT_CAMP_TAG_FORMATTER = DateTimeFormatter.ofPattern("MMdd");
 
     private WeekNumberCalculator() {
     }
@@ -35,6 +41,49 @@ public final class WeekNumberCalculator {
 
         int weekNumber = (int) weeksBetween + 1; // +1 因为第一周是1，不是0
         return weekNumber;
+    }
+
+    public static int calculateReportType(String campTag, ZonedDateTime targetPeriodEnd) {
+        LocalDate campDate = parseCampDate(campTag, targetPeriodEnd.toLocalDate());
+        if (campDate == null) {
+            logger.warn("Unable to calculate report type because campTag is invalid: {}", campTag);
+            return 0;
+        }
+
+        long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(
+                campDate,
+                targetPeriodEnd.toLocalDate());
+
+        if (daysBetween < 0 || daysBetween % 7 != 0) {
+            logger.warn("campTag {} does not align with target period end {}", campTag, targetPeriodEnd.toLocalDate());
+            return 0;
+        }
+
+        return (int) (daysBetween / 7) + 1;
+    }
+
+    private static LocalDate parseCampDate(String campTag, LocalDate targetPeriodEnd) {
+        if (campTag == null || campTag.isBlank()) {
+            return null;
+        }
+
+        String value = campTag.trim();
+        try {
+            if (value.matches("\\d{8}")) {
+                return LocalDate.parse(value, FULL_CAMP_TAG_FORMATTER);
+            }
+            if (value.matches("\\d{4}")) {
+                MonthDay monthDay = MonthDay.parse(value, SHORT_CAMP_TAG_FORMATTER);
+                LocalDate date = monthDay.atYear(targetPeriodEnd.getYear());
+                if (date.isAfter(targetPeriodEnd.plusDays(7))) {
+                    date = date.minusYears(1);
+                }
+                return date;
+            }
+        } catch (DateTimeParseException e) {
+            logger.warn("Failed to parse campTag {}: {}", campTag, e.getMessage());
+        }
+        return null;
     }
 
     public static void main(String[] args) {

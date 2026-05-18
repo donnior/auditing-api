@@ -57,6 +57,7 @@ public abstract class AbstractChatAnalysisService {
             evaluationDetail.setChatStartTime(fromTime);
             evaluationDetail.setChatEndTime(toTime);
             evaluationDetail.setBizDate(bizDate);
+            evaluationDetail.setCampTag(customer.getCampTag());
 
             // 检查是否已存在记录，如果存在则替换（使用已有的ID）
             var existingDetail = evaluationDetailRepository.findByEmployeeIdAndCustomerIdAndEvalTypeAndEvalPeriod(

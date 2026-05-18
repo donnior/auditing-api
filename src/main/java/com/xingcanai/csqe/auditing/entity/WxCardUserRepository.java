@@ -28,4 +28,16 @@ public interface WxCardUserRepository extends JpaRepository<WxCardUser, String> 
         @Param("startTime") ZonedDateTime startTime,
         @Param("endTime") ZonedDateTime endTime
     );
+
+    @Query("""
+        select u
+        from WxCardUser u
+        where u.employeeQwid = :employeeQwid
+          and u.campTag in :campTags
+        order by u.campTag desc, u.startTime asc
+        """)
+    List<WxCardUser> findByEmployeeQwidAndCampTags(
+        @Param("employeeQwid") String employeeQwid,
+        @Param("campTags") List<String> campTags
+    );
 }

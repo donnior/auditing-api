@@ -93,6 +93,9 @@ public class EvaluationDetail {
     @Column(name = "biz_date")
     private String bizDate;   //业务日期
 
+    @Column(name = "camp_tag")
+    private String campTag;   //学员期数快照
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "customer_id", referencedColumnName = "external_userid", insertable = false, updatable = false)
     @JoinColumn(name = "employee_qw_id", referencedColumnName = "employee_qwid", insertable = false, updatable = false)
