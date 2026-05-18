@@ -1,6 +1,7 @@
 package com.xingcanai.csqe.auditing.config;
 
 import com.xingcanai.csqe.auditing.job.WeeklyChatAnalysisJob;
+import com.xingcanai.csqe.auditing.job.CampCustomerDailyPerformanceSyncJob;
 import com.xingcanai.csqe.auditing.job.ChatDataSyncJob;
 import com.xingcanai.csqe.auditing.job.ChatUserSyncJob;
 import com.xingcanai.csqe.auditing.job.DailyChatAnalysisJob;
@@ -62,6 +63,31 @@ public class QuartzSchedulerConfig {
                 .withIdentity("chatUserSyncTrigger", "syncGroup")
                 .withDescription("Trigger for chat user sync job")
                 .withSchedule(CronScheduleBuilder.cronSchedule("0 10 * * * ?")) // 每小时第10分钟执行
+                .build();
+    }
+
+    /**
+     * 学员每日业绩同步任务配置
+     */
+    @Bean
+    public JobDetail campCustomerDailyPerformanceSyncJobDetail() {
+        return JobBuilder.newJob(CampCustomerDailyPerformanceSyncJob.class)
+                .withIdentity("campCustomerDailyPerformanceSyncJob", "syncGroup")
+                .withDescription("Camp customer daily performance synchronization job")
+                .storeDurably()
+                .build();
+    }
+
+    /**
+     * 学员每日业绩同步任务触发器 - 每小时执行一次（错峰）
+     */
+    @Bean
+    public Trigger campCustomerDailyPerformanceSyncJobTrigger() {
+        return TriggerBuilder.newTrigger()
+                .forJob(campCustomerDailyPerformanceSyncJobDetail())
+                .withIdentity("campCustomerDailyPerformanceSyncTrigger", "syncGroup")
+                .withDescription("Trigger for camp customer daily performance sync job")
+                .withSchedule(CronScheduleBuilder.cronSchedule("0 20 * * * ?")) // 每小时第20分钟执行
                 .build();
     }
 

@@ -126,6 +126,7 @@ public class ChatUserSyncService {
             entity.setEmployeeQwid(item.getUserid());
             entity.setId(item.getUserid() + "_" + item.getExternalUserid());
             entity.setCardName(item.getCardName());
+            entity.setCampTag(item.getCampTag());
             entity.setStartTime(item.getStartTime());
             entity.setCreateTime(item.getCreateTime());
             entity.setUpdateTime(item.getUpdateTime());

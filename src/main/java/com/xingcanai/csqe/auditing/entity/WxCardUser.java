@@ -39,6 +39,9 @@ public class WxCardUser {
     @Column(name = "card_name")
     private String cardName;
 
+    @Column(name = "camp_tag")
+    private String campTag;
+
     @Column(name = "start_time")
     private ZonedDateTime startTime;
 

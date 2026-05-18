@@ -1,27 +1,29 @@
 package com.xingcanai.csqe.auditing.external;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
-import java.time.ZonedDateTime;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChatUserResponse {
+public class CampCustomerDailyPerformanceResponse {
 
     private Integer code;
     private String msg;
-    private Data data;
+    private ResponseData data;
 
     @lombok.Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Data {
+    public static class ResponseData {
         private Long total;
-        private List<ChatUserItem> list;
+        private List<CampCustomerDailyPerformanceItem> list;
         private Integer pageNum;
         private Integer pageSize;
         private Integer size;
@@ -43,22 +45,16 @@ public class ChatUserResponse {
     @lombok.Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class ChatUserItem {
+    public static class CampCustomerDailyPerformanceItem {
+        @JsonFormat(pattern = "yyyy-MM-dd")
+        private LocalDate statDate;
+        private String campTag;
+        private String sysUserId;
+        private String salesName;
+        private String groupName;
         private String externalUserid;
         private String externalName;
-        private String cardName;
-        private String userid;
-        private String campTag;
-
-        @com.fasterxml.jackson.annotation.JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-        private ZonedDateTime startTime;
-
-        @com.fasterxml.jackson.annotation.JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-        private ZonedDateTime createTime;
-
-        @com.fasterxml.jackson.annotation.JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-        private ZonedDateTime updateTime;
-
-        private Integer weekNumber;
+        private BigDecimal gmvAmount;
+        private BigDecimal refundAmount;
     }
 }

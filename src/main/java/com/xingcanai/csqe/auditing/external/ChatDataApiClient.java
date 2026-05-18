@@ -25,6 +25,7 @@ public class ChatDataApiClient {
 
     private static final String API_DATA_URL = "https://www.cdxwsuger.cn/prod-api/api/wx/getMsgList";
     private static final String API_USER_URL = "https://www.cdxwsuger.cn/prod-api/api/wx/getCardUserList";
+    private static final String API_CAMP_CUSTOMER_DAILY_PERFORMANCE_URL = "https://www.cdxwsuger.cn/prod-api/api/wx/getCampCustomerDailyPerformance";
 
     private static final String API_TOKEN = "VoyT09nB2fSlDGbF+NWzPxekKY1ZI/jqDKECSiTK6GoeoyLCARG9SaglnEvSG/WQ";
 
@@ -150,6 +151,63 @@ public class ChatDataApiClient {
                 })
                 .doOnError(error -> {
                     logger.error("Failed to fetch chat user from external API: {}", error.getMessage());
+                });
+    }
+
+    /**
+     * 获取学员每日业绩数据。
+     *
+     * @param page            页码（从 1 开始）
+     * @param limit           每页大小
+     * @param updateStartTime 更新时间范围开始（可选，需中国时区）
+     * @param updateEndTime   更新时间范围结束（可选，需中国时区）
+     */
+    public Mono<CampCustomerDailyPerformanceResponse> fetchCampCustomerDailyPerformance(
+            Integer page,
+            Integer limit,
+            ZonedDateTime updateStartTime,
+            ZonedDateTime updateEndTime) {
+
+        final int finalPage = (page == null || page < 1) ? 1 : page;
+        final int finalLimit = (limit == null) ? 100 : limit;
+
+        ZoneId chinaZone = ZoneId.of("Asia/Shanghai");
+        if (updateStartTime != null) {
+            updateStartTime = updateStartTime.withZoneSameInstant(chinaZone);
+        }
+        if (updateEndTime != null) {
+            updateEndTime = updateEndTime.withZoneSameInstant(chinaZone);
+        }
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("page", finalPage);
+        requestBody.put("limit", finalLimit);
+        if (updateStartTime != null) {
+            requestBody.put("updateStartTime", updateStartTime.format(formatter));
+        }
+        if (updateEndTime != null) {
+            requestBody.put("updateEndTime", updateEndTime.format(formatter));
+        }
+
+        logger.info("Fetching camp customer daily performance with param: {}", requestBody);
+
+        return webClient.post()
+                .uri(API_CAMP_CUSTOMER_DAILY_PERFORMANCE_URL)
+                .header("X-Token", API_TOKEN)
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(CampCustomerDailyPerformanceResponse.class)
+                .doOnSuccess(response -> {
+                    if (response != null && response.getCode() != null && response.getCode() == 200 && response.getData() != null) {
+                        logger.info("Successfully fetched page {} of camp customer daily performance. Total: {}",
+                                finalPage, response.getData().getTotal());
+                    } else {
+                        logger.warn("Fetched camp customer daily performance but response indicates failure or empty: {}", response);
+                    }
+                })
+                .doOnError(error -> {
+                    logger.error("Failed to fetch camp customer daily performance from external API: {}", error.getMessage());
                 });
     }
 }
