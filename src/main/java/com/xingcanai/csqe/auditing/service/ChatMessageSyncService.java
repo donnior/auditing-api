@@ -22,6 +22,7 @@ import java.util.List;
 public class ChatMessageSyncService {
 
     private static final Logger logger = LoggerFactory.getLogger(ChatMessageSyncService.class);
+    private static final int MAX_SYNC_MONTHS = 1;
 
     @Autowired
     private ChatDataApiClient chatDataApiClient;
@@ -39,6 +40,11 @@ public class ChatMessageSyncService {
         ZoneId chinaZone = ZoneId.of("Asia/Shanghai");
         startTime = startTime.withZoneSameInstant(chinaZone);
         endTime = endTime.withZoneSameInstant(chinaZone);
+        ZonedDateTime earliestStartTime = endTime.minusMonths(MAX_SYNC_MONTHS);
+        if (startTime.isBefore(earliestStartTime)) {
+            logger.warn("Chat data sync range is too large, clamp startTime from {} to {}", startTime, earliestStartTime);
+            startTime = earliestStartTime;
+        }
 
         logger.info("Syncing chat data from {} to {}", startTime, endTime);
 
