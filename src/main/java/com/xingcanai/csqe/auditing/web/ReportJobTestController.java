@@ -24,8 +24,12 @@ public class ReportJobTestController {
      * 员工列表（默认按id倒序）
      */
     @GetMapping("")
-    public void testReportJob() {
-        weeklyChatAnalysisService.runAnalysis();
+    public void testReportJob(@RequestParam(required = false, name = "target_date") String targetDate) {
+        if(Strings.isNotEmpty(targetDate)) {
+            weeklyChatAnalysisService.runAnalysis(targetDate);
+        } else {
+            weeklyChatAnalysisService.runAnalysis();
+        }
     }
 
     @GetMapping("/daily")
