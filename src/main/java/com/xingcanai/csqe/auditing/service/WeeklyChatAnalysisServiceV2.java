@@ -16,8 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.xingcanai.csqe.auditing.entity.Employee;
+import com.xingcanai.csqe.auditing.entity.EvaluationDetailRepository;
 import com.xingcanai.csqe.auditing.entity.WxCardUser;
 import com.xingcanai.csqe.auditing.entity.WxCardUserRepository;
+import com.xingcanai.csqe.auditing.entity.WxChatMessageRepository;
 
 /**
  * 聊天分析服务
@@ -33,6 +35,12 @@ public class WeeklyChatAnalysisServiceV2 extends AbstractChatAnalysisService {
 
     @Autowired
     private WxCardUserRepository wxCardUserRepository;
+
+    @Autowired
+    private WxChatMessageRepository wxChatMessageRepository;
+
+    @Autowired
+    private EvaluationDetailRepository evaluationDetailRepository;
 
     @Override
     public void runAnalysis() {
@@ -73,8 +81,42 @@ public class WeeklyChatAnalysisServiceV2 extends AbstractChatAnalysisService {
             var reportType = getReportTypeForCustomer(employee, customer, targetSunday);
             if (isReportTypeSupported(reportType)) {
                 ZonedDateTime chatRangeStart = getChatTimeRangeStart(customer, targetSundayEndTime, reportType);
+                if (!hasChatInRange(employee, customer, chatRangeStart, targetSundayEndTime)) {
+                    deleteExistingDetail(employee, customer, reportType, reportPeriod);
+                    logger.debug("Skip weekly analysis because no chat found for employee {} customer {} reportType {} period {} between {} and {}",
+                            employee.getQwId(),
+                            customer.getExternalUserid(),
+                            reportType,
+                            reportPeriod,
+                            chatRangeStart,
+                            targetSundayEndTime);
+                    continue;
+                }
                 executorService.submit(() -> runCustomerAnalysisWithType(employee, customer, chatRangeStart, targetSundayEndTime, reportType, reportPeriod, bizDate));
             }
+        }
+    }
+
+    private boolean hasChatInRange(Employee employee, WxCardUser customer, ZonedDateTime startTime, ZonedDateTime endTime) {
+        return wxChatMessageRepository.countChatBetweenEmployeeAndCustomer(
+                employee.getQwId(),
+                customer.getExternalUserid(),
+                startTime,
+                endTime) > 0;
+    }
+
+    private void deleteExistingDetail(Employee employee, WxCardUser customer, String reportType, String reportPeriod) {
+        long deleted = evaluationDetailRepository.deleteByEmployeeIdAndCustomerIdAndEvalTypeAndEvalPeriod(
+                employee.getId(),
+                customer.getExternalUserid(),
+                reportType,
+                reportPeriod);
+        if (deleted > 0) {
+            logger.info("Deleted stale weekly analysis detail because no chat found: employee {} customer {} reportType {} period {}",
+                    employee.getQwId(),
+                    customer.getExternalUserid(),
+                    reportType,
+                    reportPeriod);
         }
     }
 

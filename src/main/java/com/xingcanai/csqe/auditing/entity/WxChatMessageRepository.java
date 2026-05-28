@@ -47,6 +47,18 @@ public interface WxChatMessageRepository extends JpaRepository<WxChatMessage, St
                                                          @Param("startTime") ZonedDateTime startTime,
                                                          @Param("endTime") ZonedDateTime endTime);
 
+    /**
+     * 判断员工与指定客户在时间范围内是否有聊天记录
+     */
+    @Query("SELECT COUNT(m) FROM WxChatMessage m " +
+           "WHERE ((m.fromId = :employeeId AND m.acceptId = :customerId) " +
+           "OR (m.fromId = :customerId AND m.acceptId = :employeeId)) " +
+           "AND m.msgTime BETWEEN :startTime AND :endTime")
+    long countChatBetweenEmployeeAndCustomer(@Param("employeeId") String employeeId,
+                                             @Param("customerId") String customerId,
+                                             @Param("startTime") ZonedDateTime startTime,
+                                             @Param("endTime") ZonedDateTime endTime);
+
 
     /**
      * 查询所有参与聊天的员工ID
