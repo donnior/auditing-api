@@ -137,7 +137,7 @@ public class QuartzSchedulerConfig {
                 .forJob(weeklyChatAnalysisJobDetail())
                 .withIdentity("weeklyChatAnalysisTrigger", "analysisGroup")
                 .withDescription("Trigger for weekly chat analysis job")
-                .withSchedule(CronScheduleBuilder.cronSchedule("0 0 13 ? * 2")) // 每周一12点执行
+                .withSchedule(CronScheduleBuilder.cronSchedule("0 0 3 ? * 2")) // 每周一3点执行
                 .build();
     }
 
