@@ -37,4 +37,14 @@ public class WeeklyReportSummarySpec {
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }
+
+    public static Specification<WeeklyReportSummary> employeeIdIn(List<String> employeeIds) {
+        return (root, query, criteriaBuilder) -> {
+            if (employeeIds == null || employeeIds.isEmpty()) {
+                return criteriaBuilder.disjunction();
+            }
+
+            return root.get("employeeId").in(employeeIds);
+        };
+    }
 }

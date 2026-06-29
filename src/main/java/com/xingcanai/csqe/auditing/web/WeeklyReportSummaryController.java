@@ -6,11 +6,13 @@ import com.xingcanai.csqe.auditing.entity.WeeklyReportSummarySpec;
 import com.xingcanai.csqe.auditing.entity.EvaluationDetail;
 import com.xingcanai.csqe.auditing.entity.EvaluationDetailRepository;
 import com.xingcanai.csqe.auditing.entity.EvaluationDetailSpec;
+import com.xingcanai.csqe.auditing.service.EmployeeAccessService;
 import com.xingcanai.csqe.common.XCPageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -26,6 +28,9 @@ public class WeeklyReportSummaryController {
     @Autowired
     private EvaluationDetailRepository evaluationDetailRepository;
 
+    @Autowired
+    private EmployeeAccessService employeeAccessService;
+
     /**
      * 周报汇总列表（支持过滤和排序）
      *
@@ -36,10 +41,16 @@ public class WeeklyReportSummaryController {
     @GetMapping("")
     public Page<WeeklyReportSummary> listWeeklyReportSummaries(
             XCPageRequest pageRequest,
-            WeeklyReportSummaryQueryParams queryParams) {
+            WeeklyReportSummaryQueryParams queryParams,
+            Authentication authentication) {
 
         // 构建动态查询条件
         Specification<WeeklyReportSummary> spec = WeeklyReportSummarySpec.byQueryParams(queryParams);
+        String username = authentication.getName();
+        if (!employeeAccessService.canViewAllEmployees(username)) {
+            spec = spec.and(WeeklyReportSummarySpec.employeeIdIn(
+                employeeAccessService.findManagedEmployeeIds(username)));
+        }
 
         // 默认排序：评估周期降序、评估类型、员工ID
         var req = pageRequest.toPageRequest().withSort(

@@ -34,16 +34,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // 本地开发绕过鉴权：为每个请求注入一个默认认证用户，让 SecurityConfig 的 authenticated() 通过
-        if (jwtProperties.isDevBypass() && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(jwtProperties.getDevBypassUser(), null, List.of());
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring("Bearer ".length()).trim();
@@ -55,6 +45,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 });
             }
+        }
+
+        // 本地开发绕过鉴权：没有有效 token 时才注入默认认证用户。
+        if (jwtProperties.isDevBypass() && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(jwtProperties.getDevBypassUser(), null, List.of());
+            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
         filterChain.doFilter(request, response);

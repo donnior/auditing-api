@@ -4,6 +4,7 @@ import com.xingcanai.csqe.auditing.entity.Employee;
 import com.xingcanai.csqe.auditing.entity.EmployeeGroup;
 import com.xingcanai.csqe.auditing.entity.EmployeeGroupRepository;
 import com.xingcanai.csqe.auditing.entity.EmployeeRepository;
+import com.xingcanai.csqe.auditing.service.EmployeeAccessService;
 import com.xingcanai.csqe.auth.entity.AccountUser;
 import com.xingcanai.csqe.auth.entity.AccountUserRepository;
 import com.xingcanai.csqe.common.XCPageRequest;
@@ -33,6 +34,9 @@ public class EmployeeController {
 
     @Autowired
     private AccountUserRepository accountUserRepository;
+
+    @Autowired
+    private EmployeeAccessService employeeAccessService;
 
     /**
      * 员工列表（默认按id倒序，包含分组信息）
@@ -172,39 +176,11 @@ public class EmployeeController {
      */
     @GetMapping("/managed-by-leader")
     public List<EmployeeVO> getManagedByLeader(@RequestParam String username) {
-        // 1. 根据用户名找到账户
-        AccountUser account = accountUserRepository.findByUsernameAndIsDeletedFalse(username)
-                .orElse(null);
-        if (account == null) {
-            return List.of();
-        }
-
-        // 2. 找到关联该账户的员工
-        Employee leaderEmployee = employeeRepository.findAll().stream()
-                .filter(e -> !Boolean.TRUE.equals(e.getIsDeleted()) 
-                        && account.getId().equals(e.getAccountUserId()))
-                .findFirst()
-                .orElse(null);
-        if (leaderEmployee == null) {
-            return List.of();
-        }
-
-        // 3. 找到该员工作为组长的所有分组
-        List<EmployeeGroup> leadingGroups = employeeGroupRepository.findByIsDeletedFalseOrderByCreatedAtDesc()
-                .stream()
-                .filter(g -> leaderEmployee.getId().equals(g.getLeaderId()))
-                .collect(Collectors.toList());
-        if (leadingGroups.isEmpty()) {
-            return List.of();
-        }
-
-        // 4. 获取这些分组的所有成员
-        List<String> groupIds = leadingGroups.stream()
-                .map(EmployeeGroup::getId)
-                .collect(Collectors.toList());
+        List<Employee> managedEmployees = employeeAccessService.findManagedEmployees(username);
 
         // 获取分组名称映射
-        Map<String, String> groupNameMap = leadingGroups.stream()
+        Map<String, String> groupNameMap = employeeGroupRepository.findByIsDeletedFalseOrderByCreatedAtDesc()
+                .stream()
                 .collect(Collectors.toMap(EmployeeGroup::getId, EmployeeGroup::getName, (a, b) -> a));
 
         // 获取账户名映射
@@ -213,11 +189,7 @@ public class EmployeeController {
                 .filter(a -> !Boolean.TRUE.equals(a.getIsDeleted()))
                 .collect(Collectors.toMap(AccountUser::getId, AccountUser::getUsername, (a, b) -> a));
 
-        // 返回分组内的所有员工
-        return employeeRepository.findAll().stream()
-                .filter(e -> !Boolean.TRUE.equals(e.getIsDeleted()) 
-                        && e.getGroupId() != null 
-                        && groupIds.contains(e.getGroupId()))
+        return managedEmployees.stream()
                 .map(employee -> {
                     EmployeeVO vo = new EmployeeVO();
                     vo.setId(employee.getId());
