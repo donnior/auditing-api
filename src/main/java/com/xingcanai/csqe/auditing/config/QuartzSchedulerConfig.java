@@ -5,6 +5,7 @@ import com.xingcanai.csqe.auditing.job.CampCustomerDailyPerformanceSyncJob;
 import com.xingcanai.csqe.auditing.job.ChatDataSyncJob;
 import com.xingcanai.csqe.auditing.job.ChatUserSyncJob;
 import com.xingcanai.csqe.auditing.job.DailyChatAnalysisJob;
+import com.xingcanai.csqe.auditing.job.ReportSummaryRefreshJob;
 
 import org.quartz.*;
 import org.springframework.context.annotation.Bean;
@@ -88,6 +89,31 @@ public class QuartzSchedulerConfig {
                 .withIdentity("campCustomerDailyPerformanceSyncTrigger", "syncGroup")
                 .withDescription("Trigger for camp customer daily performance sync job")
                 .withSchedule(CronScheduleBuilder.cronSchedule("0 20 * * * ?")) // 每小时第20分钟执行
+                .build();
+    }
+
+    /**
+     * 周报汇总物化视图刷新任务配置
+     */
+    @Bean
+    public JobDetail reportSummaryRefreshJobDetail() {
+        return JobBuilder.newJob(ReportSummaryRefreshJob.class)
+                .withIdentity("reportSummaryRefreshJob", "syncGroup")
+                .withDescription("Report summary materialized view refresh job")
+                .storeDurably()
+                .build();
+    }
+
+    /**
+     * 周报汇总物化视图刷新任务触发器 - 每小时执行一次（错峰）
+     */
+    @Bean
+    public Trigger reportSummaryRefreshJobTrigger() {
+        return TriggerBuilder.newTrigger()
+                .forJob(reportSummaryRefreshJobDetail())
+                .withIdentity("reportSummaryRefreshTrigger", "syncGroup")
+                .withDescription("Trigger for report summary materialized view refresh job")
+                .withSchedule(CronScheduleBuilder.cronSchedule("0 45 * * * ?")) // 每小时第45分钟执行
                 .build();
     }
 

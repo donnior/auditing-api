@@ -9,7 +9,7 @@ import jakarta.persistence.Column;
 import lombok.Data;
 
 @Entity
-@Table(name = "report_summary_view")
+@Table(name = "report_summary_mv")
 @Data
 @Immutable
 public class WeeklyReportSummary {

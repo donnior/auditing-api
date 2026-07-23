@@ -7,13 +7,17 @@ import com.xingcanai.csqe.auditing.entity.EvaluationDetail;
 import com.xingcanai.csqe.auditing.entity.EvaluationDetailRepository;
 import com.xingcanai.csqe.auditing.entity.EvaluationDetailSpec;
 import com.xingcanai.csqe.auditing.service.EmployeeAccessService;
+import com.xingcanai.csqe.auditing.service.ReportSummaryRefreshResult;
+import com.xingcanai.csqe.auditing.service.ReportSummaryRefreshService;
 import com.xingcanai.csqe.common.XCPageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * 员工管理接口
@@ -30,6 +34,9 @@ public class WeeklyReportSummaryController {
 
     @Autowired
     private EmployeeAccessService employeeAccessService;
+
+    @Autowired
+    private ReportSummaryRefreshService reportSummaryRefreshService;
 
     /**
      * 周报汇总列表（支持过滤和排序）
@@ -59,6 +66,16 @@ public class WeeklyReportSummaryController {
             .and(Sort.by("employeeId")));
 
         return weeklyReportSummaryRepository.findAll(spec, req);
+    }
+
+    @PostMapping("/refresh")
+    public ReportSummaryRefreshResult refreshReportSummary(Authentication authentication) {
+        String username = authentication.getName();
+        if (!employeeAccessService.canViewAllEmployees(username)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only users with all-employee access can refresh report summaries");
+        }
+
+        return reportSummaryRefreshService.refresh();
     }
 
     @GetMapping("/{id}")
