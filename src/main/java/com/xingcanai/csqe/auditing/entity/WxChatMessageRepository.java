@@ -35,6 +35,23 @@ public interface WxChatMessageRepository extends JpaRepository<WxChatMessage, St
                                                      @Param("endTime") ZonedDateTime endTime);
 
     /**
+     * 查询员工在半开时间区间内的全部直接聊天，供话术分析原样传输。
+     */
+    @Query("""
+        select m
+        from WxChatMessage m
+        where (m.fromId = :employeeId or m.acceptId = :employeeId)
+          and m.acceptType = 1
+          and m.msgTime >= :startTime
+          and m.msgTime < :endTime
+        order by m.msgTime asc, m.dataSeq asc, m.msgId asc
+        """)
+    List<WxChatMessage> findDirectMessagesByEmployeeAndTimeRange(
+            @Param("employeeId") String employeeId,
+            @Param("startTime") ZonedDateTime startTime,
+            @Param("endTime") ZonedDateTime endTime);
+
+    /**
      * 查询员工与指定客户在时间范围内的聊天记录
      */
     @Query("SELECT m FROM WxChatMessage m " +

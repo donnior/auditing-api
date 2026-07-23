@@ -47,6 +47,25 @@ llm:
     coze:
       app-id: 1185261263158
       apikey: sat_lHVT8MBuo0hC71uO5r6BtuW8zbJES1gmWUprWX4Lfq4Qli6fEpThfmrHSAOWXSWT
+    deepseek:
+      base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com}
+      api-key: ${DEEPSEEK_API_KEY:}
+      model: ${DEEPSEEK_MODEL:deepseek-v4-flash}
+      thinking-enabled: ${DEEPSEEK_THINKING_ENABLED:true}
+      reasoning-effort: ${DEEPSEEK_REASONING_EFFORT:high}
+      temperature: ${DEEPSEEK_TEMPERATURE:0.2}
+      max-tokens: ${DEEPSEEK_MAX_TOKENS:32768}
+      timeout: ${DEEPSEEK_TIMEOUT:15m}
+      max-retries: ${DEEPSEEK_MAX_RETRIES:2}
+      retry-delay: ${DEEPSEEK_RETRY_DELAY:1s}
+
+sales-speech-analysis:
+  prompt-version: v1.3.0
+  prompt-resource: classpath:prompts/sales-speech-analysis-v1.3.0.md
+  stale-after: 20m
+  zone-id: Asia/Shanghai
+  executor-concurrency: 2
+  executor-queue-capacity: 20
 
 security:
   jwt:

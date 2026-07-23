@@ -14,6 +14,18 @@ public interface CampCustomerDailyPerformanceRepository extends JpaRepository<Ca
     CampCustomerDailyPerformance findTopByOrderByStatDateDesc();
 
     @Query("""
+        select p
+        from CampCustomerDailyPerformance p
+        where p.sysUserId = :sysUserId
+          and p.statDate between :startDate and :endDate
+        order by p.statDate asc, p.externalUserid asc, p.campTag asc, p.id asc
+        """)
+    List<CampCustomerDailyPerformance> findRawBySysUserIdAndStatDateRange(
+            @Param("sysUserId") String sysUserId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
+
+    @Query("""
         select
             p.campTag as campTag,
             sum(p.gmvAmount) as gmvAmount,
